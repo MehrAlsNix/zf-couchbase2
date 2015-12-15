@@ -2,7 +2,343 @@
 
 namespace MehrAlsNix\ZF\Cache\Storage\Adapter;
 
+use CouchbaseCluster as CouchbaseClusterResource;
+use Zend\Cache\Exception;
+use Zend\Stdlib\ArrayUtils;
+
 class CouchbaseResourceManager
 {
+    /**
+     * Registered resources
+     *
+     * @var array
+     */
+    protected $resources = [];
 
+    /**
+     * Get servers
+     * @param string $id
+     * @throws Exception\RuntimeException
+     * @return array array('host' => <host>, 'port' => <port>)
+     */
+    public function getServer($id)
+    {
+        if (!$this->hasResource($id)) {
+            throw new Exception\RuntimeException("No resource with id '{$id}'");
+        }
+        $resource = &$this->resources[$id];
+        if ($resource instanceof CouchbaseClusterResource) {
+            return $resource->manager()->info();
+        }
+        return $resource['servers'];
+    }
+
+    /**
+     * Normalize one server into the following format:
+     * array('host' => <host>, 'port' => <port>, 'weight' => <weight>)
+     *
+     * @param string|array &$server
+     * @throws Exception\InvalidArgumentException
+     */
+    protected function normalizeServer(&$server)
+    {
+        $host = null;
+        $port = 8091;
+        // convert a single server into an array
+        if ($server instanceof \Traversable) {
+            $server = ArrayUtils::iteratorToArray($server);
+        }
+        if (is_array($server)) {
+            // array(<host>[, <port>])
+            if (isset($server[0])) {
+                $host = (string)$server[0];
+                $port = isset($server[1]) ? (int)$server[1] : $port;
+            }
+            // array('host' => <host>[, 'port' => <port>])
+            if (!isset($server[0]) && isset($server['host'])) {
+                $host = (string)$server['host'];
+                $port = isset($server['port']) ? (int)$server['port'] : $port;
+            }
+        } else {
+            // parse server from URI host{:?port}
+            $server = trim($server);
+            if (strpos($server, '://') === false) {
+                $server = 'couchbase://' . $server;
+            }
+            $server = parse_url($server);
+            if (!$server) {
+                throw new Exception\InvalidArgumentException("Invalid server given");
+            }
+            $host = $server['host'];
+            $port = isset($server['port']) ? (int)$server['port'] : $port;
+            if (isset($server['query'])) {
+                $query = null;
+                parse_str($server['query'], $query);
+            }
+        }
+        if (!$host) {
+            throw new Exception\InvalidArgumentException('Missing required server host');
+        }
+        $server = [
+            'host' => $host,
+            'port' => $port
+        ];
+    }
+
+    /**
+     * Check if a resource exists
+     *
+     * @param string $id
+     * @return bool
+     */
+    public function hasResource($id)
+    {
+        return isset($this->resources[$id]);
+    }
+
+    /**
+     * Gets a couchbase cluster resource
+     *
+     * @param string $id
+     * @return CouchbaseClusterResource
+     * @throws Exception\RuntimeException
+     */
+    public function getResource($id)
+    {
+        if (!$this->hasResource($id)) {
+            throw new Exception\RuntimeException("No resource with id '{$id}'");
+        }
+        $resource = $this->resources[$id];
+        if ($resource instanceof CouchbaseClusterResource) {
+            return $resource;
+        }
+        if ($resource['persistent_id'] !== '') {
+            $memc = new CouchbaseClusterResource($resource['persistent_id']);
+        } else {
+            $memc = new CouchbaseClusterResource();
+        }
+        // merge and add servers (with persistence id servers could be added already)
+        $servers = array_udiff($resource['servers'], $memc->getServerList(), [$this, 'compareServers']);
+        if ($servers) {
+            $memc->addServers(array_values(array_map('array_values', $servers)));
+        }
+        // buffer and return
+        $this->resources[$id] = $memc;
+        return $memc;
+    }
+
+    /**
+     * Set a resource
+     *
+     * @param string $id
+     * @param array|\Traversable|CouchbaseClusterResource $resource
+     * @return CouchbaseResourceManager Fluent interface
+     */
+    public function setResource($id, $resource)
+    {
+        $id = (string)$id;
+        if (!($resource instanceof CouchbaseClusterResource)) {
+            if ($resource instanceof \Traversable) {
+                $resource = ArrayUtils::iteratorToArray($resource);
+            } elseif (!is_array($resource)) {
+                throw new Exception\InvalidArgumentException(
+                    'Resource must be an instance of CouchbaseCluster or an array or Traversable'
+                );
+            }
+            $resource = array_merge([
+                'persistent_id' => '',
+                'servers' => [],
+            ], $resource);
+            // normalize and validate params
+            $this->normalizePersistentId($resource['persistent_id']);
+            $this->normalizeServers($resource['servers']);
+        }
+        $this->resources[$id] = $resource;
+        return $this;
+    }
+
+    /**
+     * Remove a resource
+     *
+     * @param string $id
+     * @return CouchbaseResourceManager Fluent interface
+     */
+    public function removeResource($id)
+    {
+        unset($this->resources[$id]);
+        return $this;
+    }
+
+    /**
+     * Set the persistent id
+     *
+     * @param string $id
+     * @param string $persistentId
+     * @return CouchbaseResourceManager Fluent interface
+     * @throws Exception\RuntimeException
+     */
+    public function setPersistentId($id, $persistentId)
+    {
+        if (!$this->hasResource($id)) {
+            return $this->setResource($id, [
+                'persistent_id' => $persistentId
+            ]);
+        }
+        $resource = &$this->resources[$id];
+        if ($resource instanceof CouchbaseClusterResource) {
+            throw new Exception\RuntimeException(
+                "Can't change persistent id of resource {$id} after instanziation"
+            );
+        }
+        $this->normalizePersistentId($persistentId);
+        $resource['persistent_id'] = $persistentId;
+        return $this;
+    }
+
+    /**
+     * Get the persistent id
+     *
+     * @param string $id
+     * @return string
+     * @throws Exception\RuntimeException
+     */
+    public function getPersistentId($id)
+    {
+        if (!$this->hasResource($id)) {
+            throw new Exception\RuntimeException("No resource with id '{$id}'");
+        }
+        $resource = &$this->resources[$id];
+        if ($resource instanceof CouchbaseClusterResource) {
+            throw new Exception\RuntimeException(
+                "Can't get persistent id of an instantiated couchbase resource"
+            );
+        }
+        return $resource['persistent_id'];
+    }
+
+    /**
+     * Normalize the persistent id
+     *
+     * @param string $persistentId
+     */
+    protected function normalizePersistentId(& $persistentId)
+    {
+        $persistentId = (string)$persistentId;
+    }
+
+    /**
+     * Set servers
+     *
+     * $servers can be an array list or a comma separated list of servers.
+     * One server in the list can be descripted as follows:
+     * - URI:   [tcp://]<host>[:<port>][?weight=<weight>]
+     * - Assoc: array('host' => <host>[, 'port' => <port>][, 'weight' => <weight>])
+     * - List:  array(<host>[, <port>][, <weight>])
+     *
+     * @param string $id
+     * @param string|array $servers
+     * @return CouchbaseResourceManager
+     */
+    public function setServer($id, $servers)
+    {
+        if (!$this->hasResource($id)) {
+            return $this->setResource($id, [
+                'servers' => $servers
+            ]);
+        }
+        $this->normalizeServers($servers);
+        $resource = &$this->resources[$id];
+        if ($resource instanceof CouchbaseClusterResource) {
+            // don't add servers twice
+            $servers = array_udiff($servers, $resource->getServerList(), [$this, 'compareServers']);
+            if ($servers) {
+                $resource->addServers($servers);
+            }
+        } else {
+            $resource['servers'] = $servers;
+        }
+        return $this;
+    }
+
+    /**
+     * Add servers
+     *
+     * @param string $id
+     * @param string|array $servers
+     * @return CouchbaseResourceManager
+     */
+    public function addServers($id, $servers)
+    {
+        if (!$this->hasResource($id)) {
+            return $this->setResource($id, [
+                'servers' => $servers
+            ]);
+        }
+        $this->normalizeServers($servers);
+        $resource = &$this->resources[$id];
+        if ($resource instanceof CouchbaseClusterResource) {
+            // don't add servers twice
+            $servers = array_udiff($servers, $resource->getServerList(), [$this, 'compareServers']);
+            if ($servers) {
+                $resource->addServers($servers);
+            }
+        } else {
+            // don't add servers twice
+            $resource['servers'] = array_merge(
+                $resource['servers'],
+                array_udiff($servers, $resource['servers'], [$this, 'compareServers'])
+            );
+        }
+        return $this;
+    }
+
+    /**
+     * Add one server
+     *
+     * @param string $id
+     * @param string|array $server
+     * @return CouchbaseResourceManager
+     */
+    public function addServer($id, $server)
+    {
+        return $this->addServers($id, [$server]);
+    }
+
+    /**
+     * Normalize a list of servers into the following format:
+     * array(array('host' => <host>, 'port' => <port>, 'weight' => <weight>)[, ...])
+     *
+     * @param string|array $servers
+     */
+    protected function normalizeServers(& $servers)
+    {
+        if (!is_array($servers) && !$servers instanceof \Traversable) {
+            // Convert string into a list of servers
+            $servers = explode(',', $servers);
+        }
+        $result = [];
+        foreach ($servers as $server) {
+            $this->normalizeServer($server);
+            $result[$server['host'] . ':' . $server['port']] = $server;
+        }
+        $servers = array_values($result);
+    }
+
+    /**
+     * Compare 2 normalized server arrays
+     * (Compares only the host and the port)
+     *
+     * @param array $serverA
+     * @param array $serverB
+     * @return int
+     */
+    protected function compareServers(array $serverA, array $serverB)
+    {
+        $keyA = $serverA['host'] . ':' . $serverA['port'];
+        $keyB = $serverB['host'] . ':' . $serverB['port'];
+        if ($keyA === $keyB) {
+            return 0;
+        }
+        return $keyA > $keyB ? 1 : -1;
+    }
 }

@@ -1,0 +1,29 @@
+{
+  "name": "mehr-als-nix/zf-couchbase2",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Siad Ardroumli",
+      "email": "siad.ardroumli@gmail.com"
+    }
+  ],
+  "require": {
+    "php": ">=5.5.0",
+    "zendframework/zend-cache": "~2.0"
+  },
+  "minimum-stability": "stable",
+  "require-dev": {
+    "phpunit/phpunit": "~4.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "MehrAlsNix\\ZF\\": "src/"
+    },
+    "classmap": [
+      "./"
+    ]
+  },
+  "config": {
+    "bin-dir": "bin"
+  }
+}

@@ -14,7 +14,7 @@ class CouchbaseOptions extends AdapterOptions
     protected $namespaceSeparator = ':';
 
     /**
-     * The memcached resource manager
+     * The couchbase resource manager
      *
      * @var null|CouchbaseResourceManager
      */
@@ -30,8 +30,6 @@ class CouchbaseOptions extends AdapterOptions
     /**
      * Set namespace.
      *
-     * The option Memcached::OPT_PREFIX_KEY will be used as the namespace.
-     * It can't be longer than 128 characters.
      *
      * @see AdapterOptions::setNamespace()
      * @see CouchbaseOptions::setPrefixKey()
@@ -83,7 +81,7 @@ class CouchbaseOptions extends AdapterOptions
     }
 
     /**
-     * Set the memcached resource manager to use
+     * Set the couchbase resource manager to use
      *
      * @param null|CouchbaseResourceManager $resourceManager
      * @return CouchbaseOptions
@@ -98,7 +96,7 @@ class CouchbaseOptions extends AdapterOptions
     }
 
     /**
-     * Get the memcached resource manager
+     * Get the couchbase resource manager
      *
      * @return CouchbaseResourceManager
      */
@@ -111,7 +109,7 @@ class CouchbaseOptions extends AdapterOptions
     }
 
     /**
-     * Get the memcached resource id
+     * Get the couchbase resource id
      *
      * @return string
      */
@@ -121,7 +119,7 @@ class CouchbaseOptions extends AdapterOptions
     }
 
     /**
-     * Set the memcached resource id
+     * Set the couchbase resource id
      *
      * @param string $resourceId
      * @return CouchbaseOptions
@@ -160,7 +158,7 @@ class CouchbaseOptions extends AdapterOptions
     }
 
     /**
-     * Set a list of memcached servers to add on initialize
+     * Set a list of couchbase servers to add on initialize
      *
      * @param string $server server
      * @return CouchbaseOptions

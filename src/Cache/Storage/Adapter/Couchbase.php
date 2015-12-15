@@ -84,6 +84,10 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
      */
     public function flush()
     {
-        // TODO: Implement flush() method.
+        $memc = $this->getCouchbaseResource();
+        if (!$memc->flush()) {
+            throw $this->getExceptionByResultCode($memc->getResultCode());
+        }
+        return true;
     }
 }

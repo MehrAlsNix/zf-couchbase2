@@ -68,7 +68,14 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
     protected function internalGetItem(& $normalizedKey, & $success = null, & $casToken = null)
     {
         $internalKey = $this->namespacePrefix . $normalizedKey;
-        return $this->resourceManager->getResource($this->resourceId)->get($internalKey);
+
+        try {
+            $result = $this->resourceManager->getResource($this->resourceId)->get($internalKey);
+        } catch (\CouchbaseException $e) {
+            $result = null;
+        }
+
+        return $result;
     }
 
     /**

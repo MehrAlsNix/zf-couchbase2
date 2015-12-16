@@ -47,7 +47,7 @@ class CouchbaseTest extends CommonAdapterTest
         $this->_storage->flush();
         parent::setUp();
     }
-
+/*
     public function tearDown()
     {
         if ($this->_storage) {
@@ -55,4 +55,5 @@ class CouchbaseTest extends CommonAdapterTest
         }
         parent::tearDown();
     }
+*/
 }

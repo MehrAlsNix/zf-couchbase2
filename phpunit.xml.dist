@@ -34,5 +34,9 @@
              currently in use in ZF2 for ALL COMPONENTS; you should choose the
              constants appropriate to the component you are migrating. -->
 
+        <env name="TESTS_ZEND_CACHE_COUCHBASE_ENABLED" value="true" />
+        <env name="TESTS_ZEND_CACHE_COUCHBASE_HOST" value="127.0.0.1" />
+        <env name="TESTS_ZEND_CACHE_COUCHBASE_PORT" value="8091" />
+
     </php>
 </phpunit>

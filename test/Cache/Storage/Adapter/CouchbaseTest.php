@@ -18,7 +18,7 @@ class CouchbaseTest extends CommonAdapterTest
                 new Couchbase();
                 $this->fail("Expected exception Zend\Cache\Exception\ExtensionNotLoadedException");
             } catch (ExtensionNotLoadedException $e) {
-                $this->markTestSkipped("Missing ext/memcache version >= 2.0.0");
+                $this->markTestSkipped("Missing ext/couchbase version >= 2.0.0");
             }
         }
         $this->_options  = new CouchbaseOptions([
@@ -37,5 +37,13 @@ class CouchbaseTest extends CommonAdapterTest
         $this->_storage->setOptions($this->_options);
         $this->_storage->flush();
         parent::setUp();
+    }
+
+    public function tearDown()
+    {
+        if ($this->_storage) {
+            $this->_storage->flush();
+        }
+        parent::tearDown();
     }
 }

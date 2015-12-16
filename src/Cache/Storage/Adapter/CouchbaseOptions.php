@@ -139,9 +139,9 @@ class CouchbaseOptions extends AdapterOptions
      *
      * @return string
      */
-    public function getPersistentId()
+    public function getPassword()
     {
-        return $this->getResourceManager()->getPersistentId($this->getResourceId());
+        return $this->getResourceManager()->getPassword($this->getResourceId());
     }
 
     /**
@@ -150,10 +150,9 @@ class CouchbaseOptions extends AdapterOptions
      * @param string $persistentId
      * @return CouchbaseOptions
      */
-    public function setPersistentId($persistentId)
+    public function setPassword($password)
     {
-        $this->triggerOptionEvent('persistent_id', $persistentId);
-        $this->getResourceManager()->setPersistentId($this->getResourceId(), $persistentId);
+        $this->getResourceManager()->setPassword($this->getResourceId(), $password);
         return $this;
     }
 

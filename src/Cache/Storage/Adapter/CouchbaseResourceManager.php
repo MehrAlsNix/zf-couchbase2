@@ -28,9 +28,9 @@ class CouchbaseResourceManager
         }
         $resource = &$this->resources[$id];
         if ($resource instanceof CouchbaseClusterResource) {
-            return $resource->manager()->info();
+            return $resource->manager()->info()['hostname'];
         }
-        return $resource['servers'];
+        return $resource['server'];
     }
 
     /**
@@ -63,7 +63,7 @@ class CouchbaseResourceManager
             // parse server from URI host{:?port}
             $server = trim($server);
             if (strpos($server, '://') === false) {
-                $server = 'couchbase://' . $server;
+                $server = 'http://' . $server;
             }
             $server = parse_url($server);
             if (!$server) {
@@ -100,7 +100,7 @@ class CouchbaseResourceManager
      * Gets a couchbase cluster resource
      *
      * @param string $id
-     * @return CouchbaseClusterResource
+     * @return \CouchbaseBucket
      * @throws Exception\RuntimeException
      */
     public function getResource($id)
@@ -112,19 +112,13 @@ class CouchbaseResourceManager
         if ($resource instanceof CouchbaseClusterResource) {
             return $resource;
         }
-        if ($resource['persistent_id'] !== '') {
-            $memc = new CouchbaseClusterResource($resource['persistent_id']);
-        } else {
-            $memc = new CouchbaseClusterResource();
-        }
-        // merge and add servers (with persistence id servers could be added already)
-        $servers = array_udiff($resource['servers'], $memc->getServerList(), [$this, 'compareServers']);
-        if ($servers) {
-            $memc->addServers(array_values(array_map('array_values', $servers)));
-        }
+
+        $memc = new CouchbaseClusterResource($resource['server'], $resource['username'], $resource['password']);
+        $bucket = $memc->openBucket($resource['bucket'], $resource['password']);
+
         // buffer and return
-        $this->resources[$id] = $memc;
-        return $memc;
+        $this->resources[$id] = $bucket;
+        return $bucket;
     }
 
     /**
@@ -146,11 +140,9 @@ class CouchbaseResourceManager
                 );
             }
             $resource = array_merge([
-                'persistent_id' => '',
                 'servers' => [],
             ], $resource);
             // normalize and validate params
-            $this->normalizePersistentId($resource['persistent_id']);
             $this->normalizeServers($resource['servers']);
         }
         $this->resources[$id] = $resource;
@@ -167,63 +159,6 @@ class CouchbaseResourceManager
     {
         unset($this->resources[$id]);
         return $this;
-    }
-
-    /**
-     * Set the persistent id
-     *
-     * @param string $id
-     * @param string $persistentId
-     * @return CouchbaseResourceManager Fluent interface
-     * @throws Exception\RuntimeException
-     */
-    public function setPersistentId($id, $persistentId)
-    {
-        if (!$this->hasResource($id)) {
-            return $this->setResource($id, [
-                'persistent_id' => $persistentId
-            ]);
-        }
-        $resource = &$this->resources[$id];
-        if ($resource instanceof CouchbaseClusterResource) {
-            throw new Exception\RuntimeException(
-                "Can't change persistent id of resource {$id} after instanziation"
-            );
-        }
-        $this->normalizePersistentId($persistentId);
-        $resource['persistent_id'] = $persistentId;
-        return $this;
-    }
-
-    /**
-     * Get the persistent id
-     *
-     * @param string $id
-     * @return string
-     * @throws Exception\RuntimeException
-     */
-    public function getPersistentId($id)
-    {
-        if (!$this->hasResource($id)) {
-            throw new Exception\RuntimeException("No resource with id '{$id}'");
-        }
-        $resource = &$this->resources[$id];
-        if ($resource instanceof CouchbaseClusterResource) {
-            throw new Exception\RuntimeException(
-                "Can't get persistent id of an instantiated couchbase resource"
-            );
-        }
-        return $resource['persistent_id'];
-    }
-
-    /**
-     * Normalize the persistent id
-     *
-     * @param string $persistentId
-     */
-    protected function normalizePersistentId(& $persistentId)
-    {
-        $persistentId = (string)$persistentId;
     }
 
     /**

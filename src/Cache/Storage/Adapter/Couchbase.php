@@ -2,6 +2,7 @@
 
 namespace MehrAlsNix\ZF\Cache\Storage\Adapter;
 
+use CouchbaseCluster as CouchbaseClusterResource;
 use Zend\Cache\Exception;
 use Zend\Cache\Storage\Adapter\AbstractAdapter;
 use Zend\Cache\Storage\FlushableInterface;
@@ -14,6 +15,16 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
      * @var null|int
      */
     protected static $extCouchbaseMajorVersion;
+
+    /**
+     * @var CouchbaseResourceManager
+     */
+    protected $resourceManager;
+
+    /**
+     * @var string
+     */
+    protected $resourceId;
 
     /**
      * Constructor
@@ -49,7 +60,7 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
      */
     protected function internalGetItem(& $normalizedKey, & $success = null, & $casToken = null)
     {
-        // TODO: Implement internalGetItem() method.
+        return $this->resourceManager->getResource($this->resourceId)->get($normalizedKey);
     }
 
     /**
@@ -62,7 +73,7 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
      */
     protected function internalSetItem(& $normalizedKey, & $value)
     {
-        // TODO: Implement internalSetItem() method.
+        return $this->resourceManager->getResource($this->resourceId)->insert($normalizedKey, $value);
     }
 
     /**
@@ -74,7 +85,7 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
      */
     protected function internalRemoveItem(& $normalizedKey)
     {
-        // TODO: Implement internalRemoveItem() method.
+        $this->resourceManager->getResource($this->resourceId)->remove($normalizedKey);
     }
 
     /**
@@ -84,10 +95,67 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
      */
     public function flush()
     {
-        $memc = $this->getCouchbaseResource();
-        if (!$memc->flush()) {
-            throw $this->getExceptionByResultCode($memc->getResultCode());
-        }
+        $this->getCouchbaseResource()->manager()->flush();
+
         return true;
+    }
+
+    /**
+     * Initialize the internal memcached resource
+     *
+     * @return \CouchbaseBucket
+     */
+    protected function getCouchbaseResource()
+    {
+        if (!$this->initialized) {
+            $options = $this->getOptions();
+
+            // get resource manager and resource id
+            $this->resourceManager = $options->getResourceManager();
+            $this->resourceId      = $options->getResourceId();
+
+            // init namespace prefix
+            $namespace = $options->getNamespace();
+            if ($namespace !== '') {
+                $this->namespacePrefix = $namespace . $options->getNamespaceSeparator();
+            } else {
+                $this->namespacePrefix = '';
+            }
+
+            // update initialized flag
+            $this->initialized = true;
+        }
+
+        return $this->resourceManager->getResource($this->resourceId);
+    }
+
+    /**
+     * Set options.
+     *
+     * @param  array|\Traversable|CouchbaseOptions $options
+     * @return \CouchbaseCluster
+     * @see    getOptions()
+     */
+    public function setOptions($options)
+    {
+        if (!$options instanceof CouchbaseOptions) {
+            $options = new CouchbaseOptions($options);
+        }
+
+        return parent::setOptions($options);
+    }
+
+    /**
+     * Get options.
+     *
+     * @return CouchbaseOptions
+     * @see setOptions()
+     */
+    public function getOptions()
+    {
+        if (!$this->options) {
+            $this->setOptions(new CouchbaseOptions());
+        }
+        return $this->options;
     }
 }

@@ -34,6 +34,7 @@ before_install:
   - phpize
   - ./configure --enable-couchbase
   - make && make install
+  - php -i
   - cd ..
   - composer self-update
 

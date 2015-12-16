@@ -113,7 +113,7 @@ class CouchbaseResourceManager
             return $resource;
         }
 
-        $memc = new CouchbaseClusterResource('http://' . $resource['server']['host'] . ':' . $resource['server']['port'], $resource['username'], $resource['password']);
+        $memc = new CouchbaseClusterResource('http://' . $resource['server'][0]['host'] . ':' . $resource['server'][0]['port'], $resource['username'], $resource['password']);
         $bucket = $memc->openBucket($resource['bucket'], $resource['password']);
 
         // buffer and return

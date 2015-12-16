@@ -2,6 +2,14 @@ sudo: false
 
 language: php
 
+addons:
+  apt:
+    sources:
+      - couchbase-precise
+    packages:
+      - libcouchbase-dev
+      - libcouchbase2-libevent
+
 cache:
   directories:
     - $HOME/.composer/cache

@@ -141,6 +141,8 @@ class CouchbaseResourceManager
             }
             $resource = array_merge([
                 'server' => '',
+                'username' => '',
+                'password' => ''
             ], $resource);
             // normalize and validate params
             $this->normalizeServers($resource['server']);

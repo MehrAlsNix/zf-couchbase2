@@ -112,7 +112,7 @@ class CouchbaseResourceManager
         if ($resource instanceof CouchbaseClusterResource) {
             return $resource;
         }
-
+var_dump('http://' . $resource['server'][0]['host'] . ':' . $resource['server'][0]['port'], $resource['username'], $resource['password']);
         $memc = new CouchbaseClusterResource('http://' . $resource['server'][0]['host'] . ':' . $resource['server'][0]['port'], $resource['username'], $resource['password']);
         $bucket = $memc->openBucket($resource['bucket'], $resource['password']);
 

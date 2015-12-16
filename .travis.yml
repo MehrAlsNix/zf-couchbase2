@@ -37,7 +37,6 @@ before_install:
   - echo "extension=couchbase.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
   - cd ..
   - composer self-update
-  - php -i
 
 install:
   - travis_retry composer install --no-interaction --ignore-platform-reqs --prefer-source

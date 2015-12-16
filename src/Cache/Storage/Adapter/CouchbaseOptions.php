@@ -157,6 +157,28 @@ class CouchbaseOptions extends AdapterOptions
     }
 
     /**
+     * Get the persistent id
+     *
+     * @return string
+     */
+    public function getUsername()
+    {
+        return $this->getResourceManager()->getUsername($this->getResourceId());
+    }
+
+    /**
+     * Set the persistent id
+     *
+     * @param string $persistentId
+     * @return CouchbaseOptions
+     */
+    public function setUsername($username)
+    {
+        $this->getResourceManager()->setUsername($this->getResourceId(), $username);
+        return $this;
+    }
+
+    /**
      * Set a list of couchbase servers to add on initialize
      *
      * @param string $server server

@@ -233,6 +233,60 @@ class CouchbaseResourceManager
     }
 
     /**
+     * Set servers
+     *
+     * $servers can be an array list or a comma separated list of servers.
+     * One server in the list can be descripted as follows:
+     * - URI:   [tcp://]<host>[:<port>][?weight=<weight>]
+     * - Assoc: array('host' => <host>[, 'port' => <port>][, 'weight' => <weight>])
+     * - List:  array(<host>[, <port>][, <weight>])
+     *
+     * @param string $id
+     * @param string $server
+     * @return CouchbaseResourceManager
+     */
+    public function setUsername($id, $username)
+    {
+        if (!$this->hasResource($id)) {
+            return $this->setResource($id, [
+                'username' => $username
+            ]);
+        }
+
+        $resource = &$this->resources[$id];
+        $resource['username'] = $username;
+
+        return $this;
+    }
+
+    /**
+     * Set servers
+     *
+     * $servers can be an array list or a comma separated list of servers.
+     * One server in the list can be descripted as follows:
+     * - URI:   [tcp://]<host>[:<port>][?weight=<weight>]
+     * - Assoc: array('host' => <host>[, 'port' => <port>][, 'weight' => <weight>])
+     * - List:  array(<host>[, <port>][, <weight>])
+     *
+     * @param string $id
+     * @param string $server
+     * @return CouchbaseResourceManager
+     */
+    public function setPassword($id, $password)
+    {
+        if (!$this->hasResource($id)) {
+            return $this->setResource($id, [
+                'password' => $password
+            ]);
+        }
+
+        $resource = &$this->resources[$id];
+        $resource['password'] = $password;
+
+        return $this;
+    }
+
+    /**
      * Normalize a list of servers into the following format:
      * array(array('host' => <host>, 'port' => <port>, 'weight' => <weight>)[, ...])
      *

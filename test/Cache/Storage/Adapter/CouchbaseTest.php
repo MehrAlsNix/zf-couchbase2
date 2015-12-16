@@ -33,6 +33,12 @@ class CouchbaseTest extends CommonAdapterTest
                 [getenv('TESTS_ZEND_CACHE_COUCHBASE_HOST')]
             ]);
         }
+        if (getenv('TESTS_ZEND_CACHE_COUCHBASE_USERNAME')) {
+            $this->_options->getResourceManager()->setUsername(__CLASS__, getenv('TESTS_ZEND_CACHE_COUCHBASE_USERNAME'));
+        }
+        if (getenv('TESTS_ZEND_CACHE_COUCHBASE_PASSWORD')) {
+            $this->_options->getResourceManager()->setPassword(__CLASS__, getenv('TESTS_ZEND_CACHE_COUCHBASE_PASSWORD'));
+        }
         $this->_storage = new Couchbase();
         $this->_storage->setOptions($this->_options);
         $this->_storage->flush();

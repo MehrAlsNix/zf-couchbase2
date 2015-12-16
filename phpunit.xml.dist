@@ -37,6 +37,9 @@
         <env name="TESTS_ZEND_CACHE_COUCHBASE_ENABLED" value="true" />
         <env name="TESTS_ZEND_CACHE_COUCHBASE_HOST" value="127.0.0.1" />
         <env name="TESTS_ZEND_CACHE_COUCHBASE_PORT" value="8091" />
+        <env name="TESTS_ZEND_CACHE_COUCHBASE_USERNAME" value="Administrator" />
+        <env name="TESTS_ZEND_CACHE_COUCHBASE_PASSWORD" value="password" />
+        <env name="TESTS_ZEND_CACHE_COUCHBASE_BUCKET" value="test" />
 
     </php>
 </phpunit>

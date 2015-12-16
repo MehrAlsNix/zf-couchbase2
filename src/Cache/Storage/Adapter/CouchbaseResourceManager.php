@@ -300,6 +300,10 @@ class CouchbaseResourceManager
 
     public function getBucket($id)
     {
+        if (!$this->hasResource($id)) {
+            return $this->getResource($id);
+        }
+
         $resource = &$this->resources[$id];
         return $resource['bucket'];
     }

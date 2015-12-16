@@ -67,7 +67,7 @@ abstract class CommonAdapterTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    public function tearDown()
+    public function _tearDown()
     {
         // be sure the error handler has been stopped
         if (ErrorHandler::started()) {

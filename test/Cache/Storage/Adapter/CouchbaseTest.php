@@ -39,6 +39,9 @@ class CouchbaseTest extends CommonAdapterTest
         if (getenv('TESTS_ZEND_CACHE_COUCHBASE_PASSWORD')) {
             $this->_options->getResourceManager()->setPassword(__CLASS__, getenv('TESTS_ZEND_CACHE_COUCHBASE_PASSWORD'));
         }
+        if (getenv('TESTS_ZEND_CACHE_COUCHBASE_BUCKET')) {
+            $this->_options->getResourceManager()->setBucket(__CLASS__, getenv('TESTS_ZEND_CACHE_COUCHBASE_BUCKET'));
+        }
         $this->_storage = new Couchbase();
         $this->_storage->setOptions($this->_options);
         $this->_storage->flush();

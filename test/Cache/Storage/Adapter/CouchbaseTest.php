@@ -47,13 +47,13 @@ class CouchbaseTest extends CommonAdapterTest
         $this->_storage->flush();
         parent::setUp();
     }
-/*
+
     public function tearDown()
     {
         if ($this->_storage) {
-            $this->_storage->flush();
+            var_dump($this->_storage);
+            // $this->_storage->flush();
         }
         parent::tearDown();
     }
-*/
 }

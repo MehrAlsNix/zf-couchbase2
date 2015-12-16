@@ -2,7 +2,12 @@
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:noNamespaceSchemaLocation="./vendor/phpunit/phpunit/phpunit.xsd"
          bootstrap="./test/bootstrap.php"
-         colors="true">
+         colors="true"
+         convertErrorsToExceptions="true"
+         convertNoticesToExceptions="true"
+         convertWarningsToExceptions="true"
+         processIsolation="false"
+         stopOnFailure="false">
     <testsuites>
         <testsuite name="zend-cache Test Suite">
             <directory>./test/</directory>

@@ -109,7 +109,7 @@ class CouchbaseResourceManager
             throw new Exception\RuntimeException("No resource with id '{$id}'");
         }
         $resource = $this->resources[$id];
-        if ($resource instanceof CouchbaseClusterResource) {
+        if ($resource instanceof \CouchbaseBucket) {
             return $resource;
         }
         $memc = new CouchbaseClusterResource('http://' . $resource['server'][0]['host'] . ':' . $resource['server'][0]['port'], (string) $resource['username'], (string) $resource['password']);

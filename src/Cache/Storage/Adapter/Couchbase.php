@@ -27,6 +27,13 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
     protected $resourceId;
 
     /**
+     * The namespace prefix
+     *
+     * @var string
+     */
+    protected $namespacePrefix = '';
+
+    /**
      * Constructor
      *
      * @param  null|array|\Traversable|CouchbaseOptions $options
@@ -57,9 +64,10 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
      * @param  mixed $casToken
      * @return mixed Data on success, null on failure
      * @throws Exception\ExceptionInterface
-    /
+     */
     protected function internalGetItem(& $normalizedKey, & $success = null, & $casToken = null)
     {
+        $internalKey = $this->namespacePrefix . $normalizedKey;
         return $this->resourceManager->getResource($this->resourceId)->get($normalizedKey);
     }
 
@@ -70,7 +78,7 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
      * @param  mixed $value
      * @return bool
      * @throws Exception\ExceptionInterface
-     /
+     */
     protected function internalSetItem(& $normalizedKey, & $value)
     {
         $this->resourceManager->getResource($this->resourceId)->insert($normalizedKey, $value);
@@ -84,7 +92,7 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
      * @param  string $normalizedKey
      * @return bool
      * @throws Exception\ExceptionInterface
-     /
+     */
     protected function internalRemoveItem(& $normalizedKey)
     {
         $this->resourceManager->getResource($this->resourceId)->remove($normalizedKey);

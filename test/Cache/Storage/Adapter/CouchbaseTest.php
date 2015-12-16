@@ -25,11 +25,11 @@ class CouchbaseTest extends CommonAdapterTest
             'resource_id' => __CLASS__
         ]);
         if (getenv('TESTS_ZEND_CACHE_COUCHBASE_HOST') && getenv('TESTS_ZEND_CACHE_COUCHBASE_PORT')) {
-            $this->_options->getResourceManager()->addServers(__CLASS__, [
+            $this->_options->getResourceManager()->setServer(__CLASS__, [
                 [getenv('TESTS_ZEND_CACHE_COUCHBASE_HOST'), getenv('TESTS_ZEND_CACHE_COUCHBASE_PORT')]
             ]);
         } elseif (getenv('TESTS_ZEND_CACHE_COUCHBASE_HOST')) {
-            $this->_options->getResourceManager()->addServers(__CLASS__, [
+            $this->_options->getResourceManager()->setServer(__CLASS__, [
                 [getenv('TESTS_ZEND_CACHE_COUCHBASE_HOST')]
             ]);
         }

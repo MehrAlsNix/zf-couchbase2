@@ -140,10 +140,10 @@ class CouchbaseResourceManager
                 );
             }
             $resource = array_merge([
-                'servers' => [],
+                'server' => '',
             ], $resource);
             // normalize and validate params
-            $this->normalizeServers($resource['servers']);
+            $this->normalizeServers($resource['server']);
         }
         $this->resources[$id] = $resource;
         return $this;
@@ -171,27 +171,20 @@ class CouchbaseResourceManager
      * - List:  array(<host>[, <port>][, <weight>])
      *
      * @param string $id
-     * @param string|array $servers
+     * @param string $server
      * @return CouchbaseResourceManager
      */
-    public function setServer($id, $servers)
+    public function setServer($id, $server)
     {
         if (!$this->hasResource($id)) {
             return $this->setResource($id, [
-                'servers' => $servers
+                'server' => $server
             ]);
         }
-        $this->normalizeServers($servers);
+        $this->normalizeServers($server);
         $resource = &$this->resources[$id];
-        if ($resource instanceof CouchbaseClusterResource) {
-            // don't add servers twice
-            $servers = array_udiff($servers, $resource->getServerList(), [$this, 'compareServers']);
-            if ($servers) {
-                $resource->addServers($servers);
-            }
-        } else {
-            $resource['servers'] = $servers;
-        }
+        $resource['server'] = $server;
+
         return $this;
     }
 

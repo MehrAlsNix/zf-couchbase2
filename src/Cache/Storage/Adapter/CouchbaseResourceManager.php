@@ -261,6 +261,16 @@ class CouchbaseResourceManager
         return $this;
     }
 
+    public function getUsername($id)
+    {
+        if (!$this->hasResource($id)) {
+            return $this->getResource($id);
+        }
+
+        $resource = &$this->resources[$id];
+        return $resource['username'];
+    }
+
     /**
      * Set servers
      *

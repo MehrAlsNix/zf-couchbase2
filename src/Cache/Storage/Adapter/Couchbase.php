@@ -91,10 +91,15 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
     protected function internalSetItem(& $normalizedKey, & $value)
     {
         $internalKey = $this->namespacePrefix . $normalizedKey;
-        $this->resourceManager->getResource($this->resourceId)->remove($internalKey);
-        $this->resourceManager->getResource($this->resourceId)->insert($internalKey, $value);
+        $result = true;
 
-        return true;
+        try {
+            $this->resourceManager->getResource($this->resourceId)->insert($internalKey, $value);
+        } catch (\CouchbaseException $e) {
+            $result = false;
+        }
+
+        return $result;
     }
 
     /**
@@ -107,7 +112,15 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
     protected function internalRemoveItem(& $normalizedKey)
     {
         $internalKey = $this->namespacePrefix . $normalizedKey;
-        $this->resourceManager->getResource($this->resourceId)->remove($internalKey);
+        $result = true;
+
+        try {
+            $this->resourceManager->getResource($this->resourceId)->remove($internalKey);
+        } catch (\CouchbaseException $e) {
+            $result = false;
+        }
+
+        return $result;
     }
 
     /**

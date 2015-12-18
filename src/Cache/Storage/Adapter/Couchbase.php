@@ -129,13 +129,6 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
         return $result;
     }
 
-    public function internalHasItem(& $normalizedKey)
-    {
-        $internalKey = $this->namespacePrefix . $normalizedKey;
-
-        return parent::internalHasItem($internalKey);
-    }
-
     /**
      * Flush the whole storage
      *

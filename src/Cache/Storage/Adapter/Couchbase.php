@@ -94,6 +94,12 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
         $result = true;
 
         try {
+            $this->resourceManager->getResource($this->resourceId)->remove($internalKey);
+        } catch (\CouchbaseException $e) {
+
+        }
+
+        try {
             $this->resourceManager->getResource($this->resourceId)->insert($internalKey, $value);
         } catch (\CouchbaseException $e) {
             $result = false;

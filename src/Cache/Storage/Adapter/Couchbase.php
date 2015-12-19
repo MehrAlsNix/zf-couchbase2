@@ -128,11 +128,10 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
     protected function internalRemoveItem(& $normalizedKey)
     {
         $memc = $this->getCouchbaseResource();
-        $internalKey = $this->namespacePrefix . $normalizedKey;
         $result = true;
 
         try {
-            $memc->remove($internalKey);
+            $memc->remove($this->namespacePrefix . $normalizedKey);
         } catch (\CouchbaseException $e) {
             $result = false;
         }

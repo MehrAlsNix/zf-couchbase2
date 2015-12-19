@@ -19,15 +19,16 @@ notifications:
   email: "siad.ardroumli@gmail.com"
 
 before_install:
+
+before_install:
   - sudo rm -rf /etc/apt/sources.list.d/*
   - wget -O- http://packages.couchbase.com/ubuntu/couchbase.key | sudo apt-key add -
   - echo deb http://packages.couchbase.com/ubuntu precise precise/main | sudo tee /etc/apt/sources.list.d/couchbase.list
   - sudo apt-get update
-  - sudo apt-get -y install libcouchbase-dev libcouchbase2-core libcouchbase2-libevent libevent-dev openjdk-7-jdk maven
-  - git clone git://github.com/couchbase/CouchbaseMock /tmp/CouchbaseMock
-  - pushd /tmp/CouchbaseMock
-  - mvn package
-  - java -jar /tmp/CouchbaseMock/target/CouchbaseMock-*.jar --port=8091 &
+  - sudo apt-cache search libcouchbase
+  - sudo apt-get -y install libcouchbase-dev libcouchbase2-core libcouchbase2-libevent libevent-dev
+  - mkdir t/tmp
+  - wget -O t/tmp/CouchbaseMock.jar http://packages.couchbase.com/clients/c/mock/CouchbaseMock-1.1.0-gda80301.jar
   - popd
   - if [[ $EXECUTE_COVERAGE != 'true' ]]; then phpenv config-rm xdebug.ini || return 0 ; fi
   - git clone https://github.com/couchbase/php-couchbase.git

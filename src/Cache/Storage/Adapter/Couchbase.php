@@ -136,41 +136,6 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
     }
 
     /**
-     * Internal method to increment an item.
-     *
-     * @param  string $normalizedKey
-     * @param  int    $value
-     * @return int|bool The new value on success, false on failure
-     * @throws Exception\ExceptionInterface
-     */
-    protected function internalIncrementItem(& $normalizedKey, & $value)
-    {
-        $memc        = $this->getCouchbaseResource();
-        $internalKey = $this->namespacePrefix . $normalizedKey;
-        $value       = (int) $value;
-
-        $newValue = $memc->counter($internalKey, 1, array('initial' => 1))->value;
-
-/*
-        if ($newValue === false) {
-            $rsCode = $memc->getResultCode();
-
-            // initial value
-            if ($rsCode == MemcachedResource::RES_NOTFOUND) {
-                $newValue = $value;
-                $memc->add($internalKey, $newValue, $this->expirationTime());
-                $rsCode = $memc->getResultCode();
-            }
-
-            if ($rsCode) {
-                throw $this->getExceptionByResultCode($rsCode);
-            }
-        }
-*/
-        return $newValue;
-    }
-
-    /**
      * Flush the whole storage
      *
      * @return bool

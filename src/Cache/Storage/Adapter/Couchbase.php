@@ -34,6 +34,13 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
     protected $namespacePrefix = '';
 
     /**
+     * Has this instance be initialized
+     *
+     * @var bool
+     */
+    protected $initialized = false;
+
+    /**
      * Constructor
      *
      * @param  null|array|\Traversable|CouchbaseOptions $options
@@ -49,6 +56,11 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
             throw new Exception\ExtensionNotLoadedException('Need ext/couchbase version >= 2.0.0');
         }
         parent::__construct($options);
+        // reset initialized flag on update option(s)
+        $initialized = & $this->initialized;
+        $this->getEventManager()->attach('option', function () use (& $initialized) {
+            $initialized = false;
+        });
     }
 
     /**

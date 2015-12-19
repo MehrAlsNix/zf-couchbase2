@@ -97,6 +97,7 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
      */
     protected function internalSetItem(& $normalizedKey, & $value)
     {
+        $expiry = $this->getOptions()->getTtl();
         $internalKey = $this->namespacePrefix . $normalizedKey;
         $result = true;
 
@@ -107,7 +108,7 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
         }
 
         try {
-            $this->resourceManager->getResource($this->resourceId)->insert($internalKey, $value);
+            $this->resourceManager->getResource($this->resourceId)->insert($internalKey, $value, ['expiry' => $expiry]);
         } catch (\CouchbaseException $e) {
             $result = false;
         }

@@ -27,7 +27,7 @@ before_install:
   - git clone git://github.com/couchbase/CouchbaseMock /tmp/CouchbaseMock
   - pushd /tmp/CouchbaseMock
   - mvn package
-  - java -jar /tmp/CouchbaseMock/target/CouchbaseMock-*.jar &
+  - java -jar /tmp/CouchbaseMock/target/CouchbaseMock-*.jar --port=8091 &
   - popd
   - if [[ $EXECUTE_COVERAGE != 'true' ]]; then phpenv config-rm xdebug.ini || return 0 ; fi
   - git clone https://github.com/couchbase/php-couchbase.git

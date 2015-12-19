@@ -19,7 +19,6 @@ notifications:
   email: "siad.ardroumli@gmail.com"
 
 before_install:
-  - sudo service memcached stop
   - sudo rm -rf /etc/apt/sources.list.d/*
   - wget -O- http://packages.couchbase.com/ubuntu/couchbase.key | sudo apt-key add -
   - echo deb http://packages.couchbase.com/ubuntu precise precise/main | sudo tee /etc/apt/sources.list.d/couchbase.list

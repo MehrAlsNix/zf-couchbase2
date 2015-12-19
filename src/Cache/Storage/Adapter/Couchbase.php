@@ -218,7 +218,10 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
         }
 
         try {
-            $result = $this->resourceManager->getResource($this->resourceId)->get($normalizedKeys)->value;
+            $result = $this->resourceManager->getResource($this->resourceId)->get($normalizedKeys);
+            foreach ($result as & $element) {
+                $element = $element->value;
+            }
         } catch (\CouchbaseException $e) {
             return [];
         }

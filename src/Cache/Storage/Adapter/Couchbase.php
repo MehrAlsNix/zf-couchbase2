@@ -4,6 +4,7 @@ namespace MehrAlsNix\ZF\Cache\Storage\Adapter;
 
 use Zend\Cache\Exception;
 use Zend\Cache\Storage\Adapter\AbstractAdapter;
+use Zend\Cache\Storage\Capabilities;
 use Zend\Cache\Storage\FlushableInterface;
 
 class Couchbase extends AbstractAdapter implements FlushableInterface
@@ -230,5 +231,44 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
             $this->setOptions(new CouchbaseOptions());
         }
         return $this->options;
+    }
+
+    /**
+     * Internal method to get capabilities of this adapter
+     *
+     * @return Capabilities
+     */
+    protected function internalGetCapabilities()
+    {
+        if ($this->capabilities === null) {
+            $this->capabilityMarker = new \stdClass();
+            $this->capabilities     = new Capabilities(
+                $this,
+                $this->capabilityMarker,
+                [
+                    'supportedDatatypes' => [
+                        'NULL'     => true,
+                        'boolean'  => true,
+                        'integer'  => true,
+                        'double'   => true,
+                        'string'   => true,
+                        'array'    => true,
+                        'object'   => 'object',
+                        'resource' => false,
+                    ],
+                    'supportedMetadata'  => [],
+                    'minTtl'             => 1,
+                    'maxTtl'             => 0,
+                    'staticTtl'          => true,
+                    'ttlPrecision'       => 1,
+                    'useRequestTime'     => false,
+                    'expiredRead'        => false,
+                    'maxKeyLength'       => 255,
+                    'namespaceIsPrefix'  => true,
+                ]
+            );
+        }
+
+        return $this->capabilities;
     }
 }

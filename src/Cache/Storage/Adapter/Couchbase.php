@@ -49,11 +49,6 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
             throw new Exception\ExtensionNotLoadedException('Need ext/couchbase version >= 2.0.0');
         }
         parent::__construct($options);
-        // reset initialized flag on update option(s)
-        $initialized = & $this->initialized;
-        $this->getEventManager()->attach('option', function () use (& $initialized) {
-            $initialized = false;
-        });
     }
 
     /**

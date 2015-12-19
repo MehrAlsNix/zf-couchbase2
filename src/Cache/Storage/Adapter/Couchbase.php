@@ -61,10 +61,11 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
      *
      * @param  string $normalizedKey
      * @param  bool $success
+     * @param  mixed $casToken
      * @return mixed Data on success, null on failure
      * @throws Exception\ExceptionInterface
      */
-    protected function internalGetItem(& $normalizedKey, & $success = null)
+    protected function internalGetItem(& $normalizedKey, & $success = null, & $casToken = null)
     {
         $internalKey = $this->namespacePrefix . $normalizedKey;
 

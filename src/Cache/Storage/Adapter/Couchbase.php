@@ -136,6 +136,26 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
     }
 
     /**
+     * Internal method to set an item only if token matches
+     *
+     * @param  mixed  $token
+     * @param  string $normalizedKey
+     * @param  mixed  $value
+     * @return bool
+     * @throws Exception\ExceptionInterface
+     * @see    getItem()
+     * @see    setItem()
+     */
+    protected function internalCheckAndSetItem(& $token, & $normalizedKey, & $value)
+    {
+        $memc       = $this->getCouchbaseResource();
+        // $expiration = $this->expirationTime();
+        $result = $memc->replace($this->namespacePrefix . $normalizedKey, $value, ['cas' => $token])->value;
+
+        return $result;
+    }
+
+    /**
      * Flush the whole storage
      *
      * @return bool

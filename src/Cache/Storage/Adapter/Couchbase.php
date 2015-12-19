@@ -272,7 +272,7 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
                         'integer'  => true,
                         'double'   => true,
                         'string'   => true,
-                        'array'    => true,
+                        'array'    => false,
                         'object'   => false,
                         'resource' => false,
                     ],

@@ -231,7 +231,6 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
             return [];
         }
 
-        // Convert to a single list
         $result = array_keys($result);
 
         // remove namespace prefix

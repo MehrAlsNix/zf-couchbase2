@@ -149,7 +149,7 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
         $internalKey = $this->namespacePrefix . $normalizedKey;
         $value       = (int) $value;
 
-        $newValue = $memc->counter($internalKey, 1, array('initial' => $value))->value;
+        $newValue = $memc->counter($internalKey, 1, array('initial' => 1))->value;
 
 /*
         if ($newValue === false) {

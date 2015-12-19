@@ -223,7 +223,9 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
         try {
             $result = $memc->get($normalizedKeys);
             foreach ($result as & $element) {
-                $element = $element->value;
+                if (!empty($element->error)) {
+                    $element = $element->value;
+                }
             }
         } catch (\CouchbaseException $e) {
             return [];

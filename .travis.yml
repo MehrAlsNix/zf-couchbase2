@@ -30,6 +30,7 @@ before_install:
   - sudo apt-get -y install openjdk-7-jdk maven
   - git clone git://github.com/couchbase/CouchbaseMock /tmp/CouchbaseMock
   - pushd /tmp/CouchbaseMock
+  - mvn clean install -U
   - mvn package
   - java -jar /tmp/CouchbaseMock/target/CouchbaseMock-*.jar &
   - popd

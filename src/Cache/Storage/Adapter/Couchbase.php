@@ -178,7 +178,7 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
             $ttl = $this->getOptions()->getTtl();
             return (bool) $redis->touch($this->namespacePrefix . $normalizedKey, $ttl);
         } catch (\CouchbaseException $e) {
-            throw new Exception\RuntimeException($e->getMessage(), $e->getCode(), $e);
+            return false;
         }
     }
 

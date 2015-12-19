@@ -2,7 +2,6 @@
 
 namespace MehrAlsNix\ZF\Cache\Storage\Adapter;
 
-use CouchbaseCluster as CouchbaseClusterResource;
 use Zend\Cache\Exception;
 use Zend\Cache\Storage\Adapter\AbstractAdapter;
 use Zend\Cache\Storage\FlushableInterface;

@@ -335,6 +335,16 @@ class CouchbaseResourceManager
         return $this;
     }
 
+    public function getPassword($id)
+    {
+        if (!$this->hasResource($id)) {
+            return $this->getResource($id);
+        }
+
+        $resource = &$this->resources[$id];
+        return $resource['password'];
+    }
+
     /**
      * Normalize a list of servers into the following format:
      * array(array('host' => <host>, 'port' => <port>, 'weight' => <weight>)[, ...])

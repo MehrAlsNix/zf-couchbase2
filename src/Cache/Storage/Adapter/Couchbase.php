@@ -164,6 +164,25 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
     }
 
     /**
+     * Internal method to touch an item.
+     *
+     * @param string &$normalizedKey Key which will be touched
+     *
+     * @return bool
+     * @throws Exception\RuntimeException
+     */
+    protected function internalTouchItem(& $normalizedKey)
+    {
+        $redis = $this->getCouchbaseResource();
+        try {
+            $ttl = $this->getOptions()->getTtl();
+            return (bool) $redis->touch($this->namespacePrefix . $normalizedKey, $ttl);
+        } catch (\CouchbaseException $e) {
+            throw new Exception\RuntimeException($e->getMessage(), $e->getCode(), $e);
+        }
+    }
+
+    /**
      * Flush the whole storage
      *
      * @return bool

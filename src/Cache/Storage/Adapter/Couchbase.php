@@ -183,6 +183,61 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
     }
 
     /**
+     * Internal method to test if an item exists.
+     *
+     * @param  string $normalizedKey
+     * @return bool
+     * @throws Exception\ExceptionInterface
+     */
+    protected function internalHasItem(& $normalizedKey)
+    {
+        $internalKey = $this->namespacePrefix . $normalizedKey;
+
+        try {
+            $result = $this->resourceManager->getResource($this->resourceId)->get($internalKey)->value;
+        } catch (\CouchbaseException $e) {
+            $result = false;
+        }
+
+        return (bool) $result;
+    }
+
+    /**
+     * Internal method to test multiple items.
+     *
+     * @param  array $normalizedKeys
+     * @return array Array of found keys
+     * @throws Exception\ExceptionInterface
+     */
+    protected function internalHasItems(array & $normalizedKeys)
+    {
+        $memc = $this->getCouchbaseResource();
+
+        foreach ($normalizedKeys as & $normalizedKey) {
+            $normalizedKey = $this->namespacePrefix . $normalizedKey;
+        }
+
+        try {
+            $result = $this->resourceManager->getResource($this->resourceId)->get($normalizedKeys)->value;
+        } catch (\CouchbaseException $e) {
+            return [];
+        }
+
+        // Convert to a single list
+        $result = array_keys($result);
+
+        // remove namespace prefix
+        if ($result && $this->namespacePrefix !== '') {
+            $nsPrefixLength = strlen($this->namespacePrefix);
+            foreach ($result as & $internalKey) {
+                $internalKey = substr($internalKey, $nsPrefixLength);
+            }
+        }
+
+        return $result;
+    }
+
+    /**
      * Flush the whole storage
      *
      * @return bool

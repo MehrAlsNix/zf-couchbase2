@@ -19,17 +19,16 @@ notifications:
   email: "siad.ardroumli@gmail.com"
 
 before_install:
-  # LibCouchbase
-  - sudo wget -O/etc/apt/sources.list.d/couchbase.list http://packages.couchbase.com/ubuntu/couchbase-ubuntu1204.list
-  - "sudo wget http://packages.couchbase.com/ubuntu/couchbase.key && sudo cat couchbase.key | sudo apt-key add -"
+  - sudo rm -rf /etc/apt/sources.list.d/*
+  - wget -O- http://packages.couchbase.com/ubuntu/couchbase.key | sudo apt-key add -
+  - echo deb http://packages.couchbase.com/ubuntu precise precise/main | sudo tee /etc/apt/sources.list.d/couchbase.list
   - sudo apt-get update
-  - sudo apt-get install libcouchbase2 libcouchbase-dev
-  # Couchbase Server
-  - sudo wget http://packages.couchbase.com/releases/3.0.1/couchbase-server-enterprise_3.0.1-ubuntu12.04_amd64.deb
-  - sudo dpkg -i couchbase-server-enterprise_3.0.1-ubuntu12.04_amd64.deb
-  - sudo service couchbase-server start
-  -  /opt/couchbase/bin/couchbase-cli cluster-init -c 127.0.0.1:8091 --cluster-username=Administrator --cluster-password=password --cluster-ramsize=256 -u Administrator -p password
-  - /opt/couchbase/bin/couchbase-cli bucket-create -c 127.0.0.1:8091 --bucket=test --bucket-password=password --bucket-type=couchbase --bucket-port=11211 --bucket-ramsize=100 --bucket-replica=0 -u Administrator -p password --enable-flush=1
+  - sudo apt-get -y install libcouchbase-dev libcouchbase2-core libcouchbase2-libevent libevent-dev openjdk-7-jdk maven
+  - git clone git://github.com/couchbase/CouchbaseMock /tmp/CouchbaseMock
+  - pushd /tmp/CouchbaseMock
+  - mvn package
+  - java -jar /tmp/CouchbaseMock/target/CouchbaseMock-*.jar &
+  - popd
   - if [[ $EXECUTE_COVERAGE != 'true' ]]; then phpenv config-rm xdebug.ini || return 0 ; fi
   - git clone https://github.com/couchbase/php-couchbase.git
   - cd php-couchbase/

@@ -2,8 +2,8 @@
 
 namespace MehrAlsNix\ZF\Cache\Storage\Adapter;
 
-use Zend\Cache\Storage\Adapter\AdapterOptions;
 use Zend\Cache\Exception;
+use Zend\Cache\Storage\Adapter\AdapterOptions;
 
 class CouchbaseOptions extends AdapterOptions
 {
@@ -42,7 +42,7 @@ class CouchbaseOptions extends AdapterOptions
      */
     public function setNamespace($namespace)
     {
-        $namespace = (string) $namespace;
+        $namespace = (string)$namespace;
 
         if (128 < strlen($namespace)) {
             throw new Exception\InvalidArgumentException(sprintf(
@@ -62,7 +62,7 @@ class CouchbaseOptions extends AdapterOptions
      */
     public function setNamespaceSeparator($namespaceSeparator)
     {
-        $namespaceSeparator = (string) $namespaceSeparator;
+        $namespaceSeparator = (string)$namespaceSeparator;
         if ($this->namespaceSeparator !== $namespaceSeparator) {
             $this->triggerOptionEvent('namespace_separator', $namespaceSeparator);
             $this->namespaceSeparator = $namespaceSeparator;
@@ -126,7 +126,7 @@ class CouchbaseOptions extends AdapterOptions
      */
     public function setResourceId($resourceId)
     {
-        $resourceId = (string) $resourceId;
+        $resourceId = (string)$resourceId;
         if ($this->resourceId !== $resourceId) {
             $this->triggerOptionEvent('resource_id', $resourceId);
             $this->resourceId = $resourceId;
@@ -221,5 +221,27 @@ class CouchbaseOptions extends AdapterOptions
     public function getServer()
     {
         return $this->getResourceManager()->getServer($this->getResourceId());
+    }
+
+    /**
+     * Set libmemcached options
+     *
+     * @param array $libOptions
+     * @return CouchbaseOptions
+     */
+    public function setLibOptions(array $libOptions)
+    {
+        $this->getResourceManager()->setLibOptions($this->getResourceId(), $libOptions);
+        return $this;
+    }
+
+    /**
+     * Get libmemcached options
+     *
+     * @return array
+     */
+    public function getLibOptions()
+    {
+        return $this->getResourceManager()->getLibOptions($this->getResourceId());
     }
 }

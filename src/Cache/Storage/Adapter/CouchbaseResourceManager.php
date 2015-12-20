@@ -112,8 +112,14 @@ class CouchbaseResourceManager
         if ($resource instanceof \CouchbaseBucket) {
             return $resource;
         }
-        $memc = new CouchbaseClusterResource('http://' . $resource['server'][0]['host'] . ':' . $resource['server'][0]['port'], (string) $resource['username'], (string) $resource['password']);
-        $bucket = $memc->openBucket((string) $resource['bucket'], (string) $resource['password']);
+        $memc = new CouchbaseClusterResource('couchbase://' . $resource['server'][0]['host'] . ':' . $resource['server'][0]['port'], (string)$resource['username'], (string)$resource['password']);
+        $bucket = $memc->openBucket((string)$resource['bucket'], (string)$resource['password']);
+        /*
+        $bucket->setTranscoder(
+            '\MehrAlsNix\ZF\Cache\Storage\Adapter\CouchbaseResourceManager::encoder',
+            '\MehrAlsNix\ZF\Cache\Storage\Adapter\CouchbaseResourceManager::decoder'
+        );
+        */
 
         // buffer and return
         $this->resources[$id] = $bucket;
@@ -381,5 +387,15 @@ class CouchbaseResourceManager
             return 0;
         }
         return $keyA > $keyB ? 1 : -1;
+    }
+
+    private function encoder()
+    {
+
+    }
+
+    private function decoder()
+    {
+
     }
 }

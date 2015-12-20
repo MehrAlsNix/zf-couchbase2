@@ -110,7 +110,7 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
         }
 
         try {
-            $memc->insert($internalKey, $value, ['expiry' => $expiry]);
+            $memc->insert($internalKey, $value, ['expiry' => $expiry, 'flags' => \COUCHBASE_SERTYPE_PHP]);
         } catch (\CouchbaseException $e) {
             $result = false;
         }

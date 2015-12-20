@@ -152,9 +152,105 @@ class CouchbaseResourceManager
             ], $resource);
             // normalize and validate params
             $this->normalizeServers($resource['server']);
+            $this->normalizeLibOptions($resource['lib_options']);
         }
         $this->resources[$id] = $resource;
         return $this;
+    }
+
+    /**
+     * Normalize libmemcached options
+     *
+     * @param array|\Traversable $libOptions
+     * @throws Exception\InvalidArgumentException
+     */
+    protected function normalizeLibOptions(& $libOptions)
+    {
+        if (!is_array($libOptions) && !($libOptions instanceof \Traversable)) {
+            throw new Exception\InvalidArgumentException(
+                "Lib-Options must be an array or an instance of Traversable"
+            );
+        }
+
+        $result = [];
+        foreach ($libOptions as $key => $value) {
+            $this->normalizeLibOptionKey($key);
+            $result[$key] = $value;
+        }
+
+        $libOptions = $result;
+    }
+
+    /**
+     * Convert option name into it's constant value
+     *
+     * @param string|int $key
+     * @throws Exception\InvalidArgumentException
+     */
+    protected function normalizeLibOptionKey(& $key)
+    {
+        // convert option name into it's constant value
+        if (is_string($key)) {
+            $const = '\\COUCHBASE_SERTYPE_' . str_replace([' ', '-'], '_', strtoupper($key));
+            if (!defined($const)) {
+                throw new Exception\InvalidArgumentException("Unknown libcouchbase option '{$key}' ({$const})");
+            }
+            $key = constant($const);
+        } else {
+            $key = (int) $key;
+        }
+    }
+
+    /**
+     * Set Libmemcached options
+     *
+     * @param string $id
+     * @param array  $libOptions
+     * @return CouchbaseResourceManager Fluent interface
+     */
+    public function setLibOptions($id, array $libOptions)
+    {
+        if (!$this->hasResource($id)) {
+            return $this->setResource($id, [
+                'lib_options' => $libOptions
+            ]);
+        }
+
+        $this->normalizeLibOptions($libOptions);
+
+        $resource = & $this->resources[$id];
+        $resource['lib_options'] = $libOptions;
+
+        return $this;
+    }
+
+    /**
+     * Get Libmemcached options
+     *
+     * @param string $id
+     * @return array
+     * @throws Exception\RuntimeException
+     */
+    public function getLibOptions($id)
+    {
+        if (!$this->hasResource($id)) {
+            throw new Exception\RuntimeException("No resource with id '{$id}'");
+        }
+
+        $resource = & $this->resources[$id];
+
+        if ($resource instanceof MemcachedResource) {
+            $libOptions = [];
+            $reflection = new ReflectionClass('Memcached');
+            $constants  = $reflection->getConstants();
+            foreach ($constants as $constName => $constValue) {
+                if (substr($constName, 0, 4) == 'OPT_') {
+                    $libOptions[$constValue] = $resource->getOption($constValue);
+                }
+            }
+            return $libOptions;
+        }
+        return $resource['lib_options'];
     }
 
     /**

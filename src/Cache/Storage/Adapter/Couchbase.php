@@ -4,7 +4,6 @@ namespace MehrAlsNix\ZF\Cache\Storage\Adapter;
 
 use Zend\Cache\Exception;
 use Zend\Cache\Storage\Adapter\AbstractAdapter;
-use Zend\Cache\Storage\Capabilities;
 use Zend\Cache\Storage\FlushableInterface;
 
 class Couchbase extends AbstractAdapter implements FlushableInterface

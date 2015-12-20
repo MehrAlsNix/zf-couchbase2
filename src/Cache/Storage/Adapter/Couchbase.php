@@ -110,7 +110,7 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
         }
 
         try {
-            $memc->insert($internalKey, $value, ['expiry' => $expiry, 'flags' => \COUCHBASE_SERTYPE_PHP]);
+            $memc->insert($internalKey, $value, ['expiry' => $expiry]);
         } catch (\CouchbaseException $e) {
             $result = false;
         }
@@ -137,6 +137,24 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
         }
 
         return $result;
+    }
+
+    /**
+     * Internal method to remove multiple items.
+     *
+     * @param  array $normalizedKeys
+     * @return array Array of not removed keys
+     * @throws Exception\ExceptionInterface
+     */
+    protected function internalRemoveItems(array & $normalizedKeys)
+    {
+        $memc = $this->getCouchbaseResource();
+
+        foreach ($normalizedKeys as & $normalizedKey) {
+            $normalizedKey = $this->namespacePrefix . $normalizedKey;
+        }
+
+        $memc->remove($normalizedKeys);
     }
 
     /**

@@ -145,6 +145,7 @@ class CouchbaseResourceManager
                 );
             }
             $resource = array_merge([
+                'lib_options' => [],
                 'server' => '',
                 'username' => '',
                 'password' => '',

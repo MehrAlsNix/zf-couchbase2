@@ -138,7 +138,7 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
         return true;
     }
 
-    protected function internalAddItems(array & $normalizedKeys)
+    protected function internalAddItems(array & $normalizedKeyValuePairs)
     {
         $memc       = $this->getCouchbaseResource();
         $expiration = $this->expirationTime();
@@ -149,7 +149,7 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
         }
 
         try {
-            $result = $memc->insert($normalizedKeys, null, ['expiry' => $expiration]);
+            $result = $memc->insert($namespacedKeyValuePairs, null, ['expiry' => $expiration]);
         } catch (\CouchbaseException $e) {
             throw new Exception\RuntimeException($e);
         }

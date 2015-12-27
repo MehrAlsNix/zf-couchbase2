@@ -306,7 +306,8 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
             $result = true;
         } catch (\CouchbaseException $e) {
             if ($e->getCode() === CouchbaseErrors::LCB_KEY_EEXISTS
-                || $e->getCode() === CouchbaseErrors::LCB_KEY_ENOENT) {
+                || $e->getCode() === CouchbaseErrors::LCB_KEY_ENOENT
+            ) {
                 return false;
             }
             throw new Exception\RuntimeException($e);

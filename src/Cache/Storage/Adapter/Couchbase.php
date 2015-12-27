@@ -254,6 +254,12 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
             throw new Exception\RuntimeException($e);
         }
 
+        foreach ($result as $key => $document) {
+            if (!$document->error instanceof \CouchbaseException) {
+                unset($result[$key]);
+            }
+        }
+
         $result = array_keys($result);
 
         // remove namespace prefix

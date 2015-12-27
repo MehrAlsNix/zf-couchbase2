@@ -49,15 +49,15 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
     public function __construct($options = null)
     {
         if (static::$extCouchbaseMajorVersion === null) {
-            $v = (string) phpversion('couchbase');
-            static::$extCouchbaseMajorVersion = ($v !== '') ? (int) $v[0] : 0;
+            $v = (string)phpversion('couchbase');
+            static::$extCouchbaseMajorVersion = ($v !== '') ? (int)$v[0] : 0;
         }
         if (static::$extCouchbaseMajorVersion < 1) {
             throw new Exception\ExtensionNotLoadedException('Need ext/couchbase version >= 2.0.0');
         }
         parent::__construct($options);
         // reset initialized flag on update option(s)
-        $initialized = & $this->initialized;
+        $initialized = &$this->initialized;
         $this->getEventManager()->attach('option', function () use (& $initialized) {
             $initialized = false;
         });
@@ -121,13 +121,13 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
      * Add an item.
      *
      * @param  string $normalizedKey
-     * @param  mixed  $value
+     * @param  mixed $value
      * @return bool
      * @throws Exception\ExceptionInterface
      */
     protected function internalAddItem(& $normalizedKey, & $value)
     {
-        $memc       = $this->getCouchbaseResource();
+        $memc = $this->getCouchbaseResource();
         $expiration = $this->expirationTime();
         $internalKey = $this->namespacePrefix . $normalizedKey;
         try {
@@ -149,7 +149,7 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
      */
     protected function internalAddItems(array & $normalizedKeyValuePairs)
     {
-        $memc       = $this->getCouchbaseResource();
+        $memc = $this->getCouchbaseResource();
         $expiration = $this->expirationTime();
 
         $namespacedKeyValuePairs = [];
@@ -208,7 +208,7 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
      */
     protected function internalSetItems(array & $normalizedKeyValuePairs)
     {
-        $memc       = $this->getCouchbaseResource();
+        $memc = $this->getCouchbaseResource();
         $expiration = $this->expirationTime();
 
         $namespacedKeyValuePairs = [];
@@ -285,9 +285,9 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
     /**
      * Internal method to set an item only if token matches
      *
-     * @param  mixed  $token
+     * @param  mixed $token
      * @param  string $normalizedKey
-     * @param  mixed  $value
+     * @param  mixed $value
      * @return bool
      * @throws Exception\ExceptionInterface
      * @see    getItem()
@@ -295,7 +295,7 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
      */
     protected function internalCheckAndSetItem(& $token, & $normalizedKey, & $value)
     {
-        $memc       = $this->getCouchbaseResource();
+        $memc = $this->getCouchbaseResource();
         $key = $this->namespacePrefix . $normalizedKey;
         $success = null;
         $this->internalGetItem($key, $success, $token);
@@ -317,9 +317,9 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
     /**
      * Internal method to set an item only if token matches
      *
-     * @param  mixed  $token
+     * @param  mixed $token
      * @param  string $normalizedKey
-     * @param  mixed  $value
+     * @param  mixed $value
      * @return bool
      * @throws Exception\ExceptionInterface
      * @see    getItem()
@@ -353,7 +353,7 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
         $redis = $this->getCouchbaseResource();
         try {
             $ttl = $this->getOptions()->getTtl();
-            return (bool) $redis->touch($this->namespacePrefix . $normalizedKey, $ttl);
+            return (bool)$redis->touch($this->namespacePrefix . $normalizedKey, $ttl);
         } catch (\CouchbaseException $e) {
             throw new Exception\RuntimeException($e);
         }
@@ -381,7 +381,7 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
             }
         }
 
-        return (bool) $result;
+        return (bool)$result;
     }
 
     /**
@@ -447,7 +447,7 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
 
             // get resource manager and resource id
             $this->resourceManager = $options->getResourceManager();
-            $this->resourceId      = $options->getResourceId();
+            $this->resourceId = $options->getResourceId();
 
             // init namespace prefix
             $namespace = $options->getNamespace();
@@ -503,29 +503,29 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
     {
         if ($this->capabilities === null) {
             $this->capabilityMarker = new \stdClass();
-            $this->capabilities     = new Capabilities(
+            $this->capabilities = new Capabilities(
                 $this,
                 $this->capabilityMarker,
                 [
                     'supportedDatatypes' => [
-                        'NULL'     => true,
-                        'boolean'  => true,
-                        'integer'  => true,
-                        'double'   => true,
-                        'string'   => true,
-                        'array'    => false,
-                        'object'   => false,
+                        'NULL' => true,
+                        'boolean' => true,
+                        'integer' => true,
+                        'double' => true,
+                        'string' => true,
+                        'array' => false,
+                        'object' => false,
                         'resource' => false,
                     ],
-                    'supportedMetadata'  => [],
-                    'minTtl'             => 1,
-                    'maxTtl'             => 0,
-                    'staticTtl'          => true,
-                    'ttlPrecision'       => 1,
-                    'useRequestTime'     => false,
-                    'expiredRead'        => false,
-                    'maxKeyLength'       => 255,
-                    'namespaceIsPrefix'  => true,
+                    'supportedMetadata' => [],
+                    'minTtl' => 1,
+                    'maxTtl' => 0,
+                    'staticTtl' => true,
+                    'ttlPrecision' => 1,
+                    'useRequestTime' => false,
+                    'expiredRead' => false,
+                    'maxKeyLength' => 255,
+                    'namespaceIsPrefix' => true,
                 ]
             );
         }

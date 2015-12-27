@@ -107,7 +107,11 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
         try {
             $memc->insert($internalKey, $value, ['expiry' => $expiry]);
         } catch (\CouchbaseException $e) {
-            return new Exception\RuntimeException($e->getMessage());
+            if ($e->getCode() === 13) {
+                return false;
+            }
+
+            throw new Exception\RuntimeException($e->getMessage());
         }
 
         return true;

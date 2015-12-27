@@ -41,7 +41,7 @@
 
         <env name="TESTS_ZEND_CACHE_COUCHBASE_ENABLED" value="true" />
         <env name="TESTS_ZEND_CACHE_COUCHBASE_HOST" value="127.0.0.1" />
-        <env name="TESTS_ZEND_CACHE_COUCHBASE_PORT" value="0" />
+        <env name="TESTS_ZEND_CACHE_COUCHBASE_PORT" value="8091" />
         <env name="TESTS_ZEND_CACHE_COUCHBASE_USERNAME" value="" />
         <env name="TESTS_ZEND_CACHE_COUCHBASE_PASSWORD" value="" />
         <env name="TESTS_ZEND_CACHE_COUCHBASE_BUCKET" value="default" />

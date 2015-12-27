@@ -302,10 +302,11 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
         $expiration = $this->expirationTime();
 
         try {
-            $memc->replace($key, $value, array('cas' => $token, 'expiry' => $expiration));
+            $memc->replace($key, $value, ['cas' => $token, 'expiry' => $expiration]);
             $result = true;
         } catch (\CouchbaseException $e) {
-            if ($e->getCode() === CouchbaseErrors::LCB_KEY_EEXISTS || $e->getCode() === CouchbaseErrors::LCB_KEY_ENOENT) {
+            if ($e->getCode() === CouchbaseErrors::LCB_KEY_EEXISTS
+                || $e->getCode() === CouchbaseErrors::LCB_KEY_ENOENT) {
                 return false;
             }
             throw new Exception\RuntimeException($e);

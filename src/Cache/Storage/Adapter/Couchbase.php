@@ -434,6 +434,47 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
     }
 
     /**
+     * Internal method to get multiple items.
+     *
+     * @param  array $normalizedKeys
+     * @return array Associative array of keys and values
+     * @throws Exception\ExceptionInterface
+     */
+    protected function internalGetItems(array & $normalizedKeys)
+    {
+        $memc = $this->getCouchbaseResource();
+
+        foreach ($normalizedKeys as & $normalizedKey) {
+            $normalizedKey = $this->namespacePrefix . $normalizedKey;
+        }
+
+        try {
+            $result = $memc->get($normalizedKeys);
+            foreach ($result as $key => $element) {
+                if ($element->error instanceof \CouchbaseException
+                    && $element->error->getCode() === CouchbaseErrors::LCB_KEY_ENOENT
+                ) {
+                    unset($result[$key]);
+                }
+            }
+        } catch (\CouchbaseException $e) {
+            return [];
+        }
+
+        // remove namespace prefix from result
+        if ($result && $this->namespacePrefix !== '') {
+            $tmp            = [];
+            $nsPrefixLength = strlen($this->namespacePrefix);
+            foreach ($result as $internalKey => & $value) {
+                $tmp[substr($internalKey, $nsPrefixLength)] = & $value->value;
+            }
+            $result = $tmp;
+        }
+
+        return $result;
+    }
+
+    /**
      * Internal method to increment an item.
      *
      * @param  string $normalizedKey

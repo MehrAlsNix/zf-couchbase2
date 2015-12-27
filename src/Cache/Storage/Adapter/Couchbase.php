@@ -288,7 +288,8 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
     {
         $memc       = $this->getCouchbaseResource();
         $key = $this->namespacePrefix . $normalizedKey;
-        $document = $this->internalGetItem($key, null, $token);
+        $success = null;
+        $this->internalGetItem($key, $success, $token);
         $expiration = $this->expirationTime();
 
         try {

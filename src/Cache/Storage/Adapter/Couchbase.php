@@ -156,6 +156,7 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
         foreach ($normalizedKeyValuePairs as $normalizedKey => & $value) {
             $namespacedKeyValuePairs[$this->namespacePrefix . $normalizedKey] = ['value' => & $value];
         }
+        unset($value);
 
         try {
             $result = $memc->insert($namespacedKeyValuePairs, null, ['expiry' => $expiration]);
@@ -215,6 +216,7 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
         foreach ($normalizedKeyValuePairs as $normalizedKey => & $value) {
             $namespacedKeyValuePairs[$this->namespacePrefix . $normalizedKey] = ['value' => & $value];
         }
+        unset($value);
 
         $memc->upsert($namespacedKeyValuePairs, null, ['expiry' => $expiration]);
 
@@ -319,13 +321,10 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
     /**
      * Internal method to set an item only if token matches
      *
-     * @param  mixed $token
      * @param  string $normalizedKey
      * @param  mixed $value
      * @return bool
      * @throws Exception\ExceptionInterface
-     * @see    getItem()
-     * @see    setItem()
      */
     protected function internalReplaceItem(& $normalizedKey, & $value)
     {
@@ -357,7 +356,9 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
             $ttl = $this->getOptions()->getTtl();
             $redis->touch($this->namespacePrefix . $normalizedKey, $ttl);
         } catch (\CouchbaseException $e) {
-            if ($e->getCode() === CouchbaseErrors::LCB_KEY_EEXISTS || $e->getCode() === CouchbaseErrors::LCB_KEY_ENOENT) {
+            if ($e->getCode() === CouchbaseErrors::LCB_KEY_EEXISTS
+                || $e->getCode() === CouchbaseErrors::LCB_KEY_ENOENT
+            ) {
                 return false;
             }
             throw new Exception\RuntimeException($e);
@@ -409,7 +410,9 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
         try {
             $result = $memc->get($normalizedKeys);
             foreach ($result as $key => $element) {
-                if ($element->error instanceof \CouchbaseException && $element->error->getCode() === CouchbaseErrors::LCB_KEY_ENOENT) {
+                if ($element->error instanceof \CouchbaseException
+                    && $element->error->getCode() === CouchbaseErrors::LCB_KEY_ENOENT
+                ) {
                     unset($result[$key]);
                 }
             }

@@ -5,6 +5,10 @@ namespace MehrAlsNix\ZF\Cache\Storage\Adapter;
 use Zend\Cache\Exception;
 use Zend\Cache\Storage\Adapter\AdapterOptions;
 
+/**
+ * Class CouchbaseOptions
+ * @package MehrAlsNix\ZF\Cache\Storage\Adapter
+ */
 class CouchbaseOptions extends AdapterOptions
 {
     /**
@@ -147,7 +151,7 @@ class CouchbaseOptions extends AdapterOptions
     /**
      * Set the persistent id
      *
-     * @param string $persistentId
+     * @param string $password
      * @return CouchbaseOptions
      */
     public function setPassword($password)
@@ -169,7 +173,7 @@ class CouchbaseOptions extends AdapterOptions
     /**
      * Set the persistent id
      *
-     * @param string $persistentId
+     * @param string $username
      * @return CouchbaseOptions
      */
     public function setUsername($username)
@@ -191,7 +195,7 @@ class CouchbaseOptions extends AdapterOptions
     /**
      * Set the persistent id
      *
-     * @param string $persistentId
+     * @param string $bucket
      * @return CouchbaseOptions
      */
     public function setBucket($bucket)

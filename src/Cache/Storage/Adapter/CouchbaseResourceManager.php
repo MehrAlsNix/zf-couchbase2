@@ -40,6 +40,7 @@ class CouchbaseResourceManager
      *
      * @param string|array &$server
      * @throws Exception\InvalidArgumentException
+     * @throws \Zend\Stdlib\Exception\InvalidArgumentException
      */
     protected function normalizeServer(&$server)
     {
@@ -68,7 +69,7 @@ class CouchbaseResourceManager
             }
             $server = parse_url($server);
             if (!$server) {
-                throw new Exception\InvalidArgumentException("Invalid server given");
+                throw new Exception\InvalidArgumentException('Invalid server given');
             }
             $host = $server['host'];
             $port = isset($server['port']) ? (int)$server['port'] : $port;
@@ -133,6 +134,7 @@ class CouchbaseResourceManager
      * @param string $id
      * @param array|\Traversable|CouchbaseBucketResource $resource
      * @return CouchbaseResourceManager Fluent interface
+     * @throws \Zend\Stdlib\Exception\InvalidArgumentException
      */
     public function setResource($id, $resource)
     {
@@ -170,7 +172,7 @@ class CouchbaseResourceManager
     {
         if (!is_array($libOptions) && !($libOptions instanceof \Traversable)) {
             throw new Exception\InvalidArgumentException(
-                "Lib-Options must be an array or an instance of Traversable"
+                'Lib-Options must be an array or an instance of Traversable'
             );
         }
 
@@ -348,7 +350,7 @@ class CouchbaseResourceManager
      * - List:  array(<host>[, <port>][, <weight>])
      *
      * @param string $id
-     * @param string $server
+     * @param string $username
      * @return CouchbaseResourceManager
      */
     public function setUsername($id, $username)
@@ -385,7 +387,7 @@ class CouchbaseResourceManager
      * - List:  array(<host>[, <port>][, <weight>])
      *
      * @param string $id
-     * @param string $server
+     * @param string $bucket
      * @return CouchbaseResourceManager
      */
     public function setBucket($id, $bucket)
@@ -422,7 +424,7 @@ class CouchbaseResourceManager
      * - List:  array(<host>[, <port>][, <weight>])
      *
      * @param string $id
-     * @param string $server
+     * @param string $password
      * @return CouchbaseResourceManager
      */
     public function setPassword($id, $password)
@@ -454,6 +456,7 @@ class CouchbaseResourceManager
      * array(array('host' => <host>, 'port' => <port>, 'weight' => <weight>)[, ...])
      *
      * @param string|array $servers
+     * @throws \Zend\Stdlib\Exception\InvalidArgumentException
      */
     protected function normalizeServers(& $servers)
     {

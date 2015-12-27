@@ -287,12 +287,12 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
     protected function internalCheckAndSetItem(& $token, & $normalizedKey, & $value)
     {
         $memc       = $this->getCouchbaseResource();
-
-        $document = $this->internalGetItem($this->namespacePrefix . $normalizedKey, null, $token);
+        $key = $this->namespacePrefix . $normalizedKey;
+        $document = $this->internalGetItem($key, null, $token);
         $expiration = $this->expirationTime();
 
         try {
-            $memc->replace($this->namespacePrefix . $normalizedKey, $value, array('cas' => $token, 'expiry' => $expiration));
+            $memc->replace($key, $value, array('cas' => $token, 'expiry' => $expiration));
             $result = true;
         } catch (\CouchbaseException $e) {
             if ($e->getCode() === 13) {

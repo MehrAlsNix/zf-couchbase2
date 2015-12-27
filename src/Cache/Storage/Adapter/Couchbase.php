@@ -455,6 +455,8 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
                     && $element->error->getCode() === CouchbaseErrors::LCB_KEY_ENOENT
                 ) {
                     unset($result[$key]);
+                } else {
+                    $result[$key] = $element->value;
                 }
             }
         } catch (\CouchbaseException $e) {
@@ -465,8 +467,8 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
         if ($result && $this->namespacePrefix !== '') {
             $tmp            = [];
             $nsPrefixLength = strlen($this->namespacePrefix);
-            foreach ($result as $internalKey => & $value) {
-                $tmp[substr($internalKey, $nsPrefixLength)] = & $value->value;
+            foreach ($result as $internalKey => $value) {
+                $tmp[substr($internalKey, $nsPrefixLength)] = $value instanceof \CouchbaseMetaDoc ? $value->value : $value;
             }
             $result = $tmp;
         }

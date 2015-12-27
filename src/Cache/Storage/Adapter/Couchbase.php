@@ -403,7 +403,7 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
         try {
             $result = $memc->get($normalizedKeys);
             foreach ($result as $key => $element) {
-                if ($element->error->getCode() === CouchbaseErrors::LCB_KEY_ENOENT) {
+                if ($element->error instanceof \CouchbaseException && $element->error->getCode() === CouchbaseErrors::LCB_KEY_ENOENT) {
                     unset($result[$key]);
                 }
             }

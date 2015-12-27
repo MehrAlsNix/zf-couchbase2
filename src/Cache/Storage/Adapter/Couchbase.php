@@ -138,6 +138,11 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
         return true;
     }
 
+    /**
+     * @param array $normalizedKeyValuePairs
+     * @return array|mixed
+     * @throws Exception\RuntimeException
+     */
     protected function internalAddItems(array & $normalizedKeyValuePairs)
     {
         $memc       = $this->getCouchbaseResource();

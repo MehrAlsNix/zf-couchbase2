@@ -135,6 +135,7 @@ class CouchbaseResourceManager
      * @param array|\Traversable|CouchbaseBucketResource $resource
      * @return CouchbaseResourceManager Fluent interface
      * @throws \Zend\Stdlib\Exception\InvalidArgumentException
+     * @throws Exception\InvalidArgumentException
      */
     public function setResource($id, $resource)
     {

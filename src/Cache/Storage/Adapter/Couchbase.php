@@ -461,10 +461,10 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
 
             // init namespace prefix
             $namespace = $options->getNamespace();
+            $this->namespacePrefix = '';
+
             if ($namespace !== '') {
                 $this->namespacePrefix = $namespace . $options->getNamespaceSeparator();
-            } else {
-                $this->namespacePrefix = '';
             }
 
             // update initialized flag

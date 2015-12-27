@@ -449,12 +449,11 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
         $newValue = false;
 
         try {
-            $newValue = $memc->counter($internalKey, 1)->value;
+            $newValue = $memc->counter($internalKey, $value, ['initial' => $value, 'expiry' => $this->expirationTime()])->value;
         } catch (\CouchbaseException $e) {
             try {
                 if ($e->getCode() === CouchbaseErrors::LCB_KEY_ENOENT) {
-                    $newValue = $memc->insert($internalKey, $value);
-                    $newValue = $memc->counter($internalKey, 0)->value;
+                    $newValue = $memc->insert($internalKey, $value, ['expiry' => $this->expirationTime()])->value;
                 }
             } catch (\CouchbaseException $e) {
                 throw new Exception\RuntimeException($e);

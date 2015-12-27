@@ -434,6 +434,37 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
     }
 
     /**
+     * Internal method to increment an item.
+     *
+     * @param  string $normalizedKey
+     * @param  int $value
+     * @return int|bool The new value on success, false on failure
+     * @throws Exception\ExceptionInterface
+     */
+    protected function internalIncrementItem(& $normalizedKey, & $value)
+    {
+        $memc = $this->getCouchbaseResource();
+        $internalKey = $this->namespacePrefix . $normalizedKey;
+        $value = (int)$value;
+        $newValue = false;
+
+        try {
+            $newValue = $memc->counter($internalKey, 1)->value;
+        } catch (\CouchbaseException $e) {
+            try {
+                if ($e->getCode() === CouchbaseErrors::LCB_KEY_ENOENT) {
+                    $newValue = $memc->insert($internalKey, $value);
+                    $newValue = $memc->counter($internalKey, 0)->value;
+                }
+            } catch (\CouchbaseException $e) {
+                throw new Exception\RuntimeException($e);
+            }
+        }
+
+        return $newValue;
+    }
+
+    /**
      * Flush the whole storage
      *
      * @return bool

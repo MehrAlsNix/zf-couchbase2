@@ -105,7 +105,7 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
         $internalKey = $this->namespacePrefix . $normalizedKey;
 
         try {
-            $memc->insert($internalKey, $value, ['expiry' => $expiry]);
+            $memc->upsert($internalKey, $value, ['expiry' => $expiry]);
         } catch (\CouchbaseException $e) {
             if ($e->getCode() === CouchbaseErrors::LCB_KEY_ENOENT) {
                 return false;
@@ -402,9 +402,9 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
 
         try {
             $result = $memc->get($normalizedKeys);
-            foreach ($result as & $element) {
-                if (!empty($element->error)) {
-                    $element = $element->value;
+            foreach ($result as $key => $element) {
+                if ($element->error->getCode() === CouchbaseErrors::LCB_KEY_ENOENT) {
+                    unset($result[$key]);
                 }
             }
         } catch (\CouchbaseException $e) {

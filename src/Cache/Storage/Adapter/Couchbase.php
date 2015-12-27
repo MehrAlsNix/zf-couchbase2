@@ -301,7 +301,7 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
             $memc->replace($key, $value, array('cas' => $token, 'expiry' => $expiration));
             $result = true;
         } catch (\CouchbaseException $e) {
-            if ($e->getCode() === 13) {
+            if ($e->getCode() === 12 || $e->getCode() === 13) {
                 return false;
             }
             throw new Exception\RuntimeException($e);

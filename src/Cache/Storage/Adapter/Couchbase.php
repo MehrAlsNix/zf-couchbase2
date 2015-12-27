@@ -78,7 +78,9 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
         $memc = $this->getCouchbaseResource();
 
         try {
-            $result = $memc->get($internalKey)->value;
+            $document = $memc->get($internalKey);
+            $result = $document->value;
+            $casToken = $document->cas;
             $success = true;
         } catch (\CouchbaseException $e) {
             $result = null;
@@ -99,23 +101,115 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
     protected function internalSetItem(& $normalizedKey, & $value)
     {
         $memc = $this->getCouchbaseResource();
-        $expiry = $this->getOptions()->getTtl();
+        $expiry = $this->expirationTime();
         $internalKey = $this->namespacePrefix . $normalizedKey;
-        $result = true;
-
-        try {
-            $memc->remove($internalKey);
-        } catch (\CouchbaseException $e) {
-
-        }
 
         try {
             $memc->insert($internalKey, $value, ['expiry' => $expiry]);
         } catch (\CouchbaseException $e) {
-            $result = false;
+            return new Exception\RuntimeException($e->getMessage());
+        }
+
+        return true;
+    }
+
+    /**
+     * Add an item.
+     *
+     * @param  string $normalizedKey
+     * @param  mixed  $value
+     * @return bool
+     * @throws Exception\ExceptionInterface
+     */
+    protected function internalAddItem(& $normalizedKey, & $value)
+    {
+        $memc       = $this->getCouchbaseResource();
+        $expiration = $this->expirationTime();
+        $internalKey = $this->namespacePrefix . $normalizedKey;
+        try {
+            $memc->insert($internalKey, $value, ['expiry' => $expiration]);
+        } catch (\CouchbaseException $e) {
+            if ($e->getCode() === 12) {
+                return false;
+            }
+            throw new Exception\RuntimeException($e);
+        }
+
+        return true;
+    }
+
+    protected function internalAddItems(array & $normalizedKeys)
+    {
+        $memc       = $this->getCouchbaseResource();
+        $expiration = $this->expirationTime();
+
+        $namespacedKeyValuePairs = [];
+        foreach ($normalizedKeyValuePairs as $normalizedKey => & $value) {
+            $namespacedKeyValuePairs[$this->namespacePrefix . $normalizedKey] = ['value' => & $value];
+        }
+
+        try {
+            $result = $memc->insert($normalizedKeys, null, ['expiry' => $expiration]);
+        } catch (\CouchbaseException $e) {
+            throw new Exception\RuntimeException($e);
+        }
+
+        $result = array_keys($result);
+
+        // remove namespace prefix
+        if ($result && $this->namespacePrefix !== '') {
+            $nsPrefixLength = strlen($this->namespacePrefix);
+            foreach ($result as & $internalKey) {
+                $internalKey = substr($internalKey, $nsPrefixLength);
+            }
         }
 
         return $result;
+    }
+
+    /**
+     * Get expiration time by ttl
+     *
+     * Some storage commands involve sending an expiration value (relative to
+     * an item or to an operation requested by the client) to the server. In
+     * all such cases, the actual value sent may either be Unix time (number of
+     * seconds since January 1, 1970, as an integer), or a number of seconds
+     * starting from current time. In the latter case, this number of seconds
+     * may not exceed 60*60*24*30 (number of seconds in 30 days); if the
+     * expiration value is larger than that, the server will consider it to be
+     * real Unix time value rather than an offset from current time.
+     *
+     * @return int
+     */
+    protected function expirationTime()
+    {
+        $ttl = $this->getOptions()->getTtl();
+        if ($ttl > 2592000) {
+            return time() + $ttl;
+        }
+        return $ttl;
+    }
+
+    /**
+     * Internal method to store multiple items.
+     *
+     * @param  array $normalizedKeyValuePairs
+     * @return array Array of not stored keys
+     * @throws Exception\ExceptionInterface
+     */
+    protected function internalSetItems(array & $normalizedKeyValuePairs)
+    {
+        $memc       = $this->getCouchbaseResource();
+        $expiration = $this->expirationTime();
+
+        $namespacedKeyValuePairs = [];
+        foreach ($normalizedKeyValuePairs as $normalizedKey => & $value) {
+            $namespacedKeyValuePairs[$this->namespacePrefix . $normalizedKey] = ['value' => & $value];
+        }
+
+        $memc->upsert($namespacedKeyValuePairs, null, ['expiry' => $expiration]);
+
+        return [];
     }
 
     /**
@@ -154,7 +248,54 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
             $normalizedKey = $this->namespacePrefix . $normalizedKey;
         }
 
-        $memc->remove($normalizedKeys);
+        try {
+            $result = $memc->remove($normalizedKeys);
+        } catch (\CouchbaseException $e) {
+            throw new Exception\RuntimeException($e);
+        }
+
+        $result = array_keys($result);
+
+        // remove namespace prefix
+        if ($result && $this->namespacePrefix !== '') {
+            $nsPrefixLength = strlen($this->namespacePrefix);
+            foreach ($result as & $internalKey) {
+                $internalKey = substr($internalKey, $nsPrefixLength);
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Internal method to set an item only if token matches
+     *
+     * @param  mixed  $token
+     * @param  string $normalizedKey
+     * @param  mixed  $value
+     * @return bool
+     * @throws Exception\ExceptionInterface
+     * @see    getItem()
+     * @see    setItem()
+     */
+    protected function internalCheckAndSetItem(& $token, & $normalizedKey, & $value)
+    {
+        $memc       = $this->getCouchbaseResource();
+
+        $document = $this->internalGetItem($this->namespacePrefix . $normalizedKey, null, $token);
+        $expiration = $this->expirationTime();
+
+        try {
+            $memc->replace($this->namespacePrefix . $normalizedKey, $value, array('cas' => $token, 'expiry' => $expiration));
+            $result = true;
+        } catch (\CouchbaseException $e) {
+            if ($e->getCode() === 13) {
+                return false;
+            }
+            throw new Exception\RuntimeException($e);
+        }
+
+        return $result;
     }
 
     /**
@@ -173,9 +314,9 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
         $result = true;
 
         $memc = $this->getCouchbaseResource();
-        // $expiration = $this->expirationTime();
+        $expiration = $this->expirationTime();
         try {
-            $memc->replace($this->namespacePrefix . $normalizedKey, $value);
+            $memc->replace($this->namespacePrefix . $normalizedKey, $value, ['expiry' => $expiration]);
         } catch (\CouchbaseException $e) {
             $result = false;
         }
@@ -198,7 +339,7 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
             $ttl = $this->getOptions()->getTtl();
             return (bool) $redis->touch($this->namespacePrefix . $normalizedKey, $ttl);
         } catch (\CouchbaseException $e) {
-            return false;
+            throw new Exception\RuntimeException($e);
         }
     }
 
@@ -217,7 +358,11 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
         try {
             $result = $memc->get($internalKey)->value;
         } catch (\CouchbaseException $e) {
-            $result = false;
+            if ($e->getCode() === 13) {
+                $result = false;
+            } else {
+                throw new Exception\RuntimeException($e);
+            }
         }
 
         return (bool) $result;

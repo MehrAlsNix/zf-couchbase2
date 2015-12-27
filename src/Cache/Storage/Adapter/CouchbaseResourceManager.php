@@ -3,6 +3,7 @@
 namespace MehrAlsNix\ZF\Cache\Storage\Adapter;
 
 use CouchbaseCluster as CouchbaseClusterResource;
+use CouchbaseBucket as CouchbaseBucketResource;
 use Zend\Cache\Exception;
 use Zend\Stdlib\ArrayUtils;
 
@@ -27,7 +28,7 @@ class CouchbaseResourceManager
             throw new Exception\RuntimeException("No resource with id '{$id}'");
         }
         $resource = &$this->resources[$id];
-        if ($resource instanceof CouchbaseClusterResource) {
+        if ($resource instanceof CouchbaseBucketResource) {
             return $resource->manager()->info()['hostname'];
         }
         return $resource['server'];
@@ -130,13 +131,13 @@ class CouchbaseResourceManager
      * Set a resource
      *
      * @param string $id
-     * @param array|\Traversable|CouchbaseClusterResource $resource
+     * @param array|\Traversable|CouchbaseBucketResource $resource
      * @return CouchbaseResourceManager Fluent interface
      */
     public function setResource($id, $resource)
     {
         $id = (string)$id;
-        if (!($resource instanceof CouchbaseClusterResource)) {
+        if (!($resource instanceof CouchbaseBucketResource)) {
             if ($resource instanceof \Traversable) {
                 $resource = ArrayUtils::iteratorToArray($resource);
             } elseif (!is_array($resource)) {
@@ -309,7 +310,7 @@ class CouchbaseResourceManager
         }
         $this->normalizeServers($servers);
         $resource = &$this->resources[$id];
-        if ($resource instanceof CouchbaseClusterResource) {
+        if ($resource instanceof CouchbaseBucketResource) {
             // don't add servers twice
             $servers = array_udiff($servers, $resource->getServerList(), [$this, 'compareServers']);
             if ($servers) {

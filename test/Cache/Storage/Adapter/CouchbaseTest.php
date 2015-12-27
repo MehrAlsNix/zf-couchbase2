@@ -21,7 +21,7 @@ class CouchbaseTest extends CommonAdapterTest
                 $this->markTestSkipped("Missing ext/couchbase version >= 2.0.0");
             }
         }
-        $this->_options  = new CouchbaseOptions([
+        $this->_options = new CouchbaseOptions([
             'resource_id' => __CLASS__
         ]);
         if (getenv('TESTS_ZEND_CACHE_COUCHBASE_HOST') && getenv('TESTS_ZEND_CACHE_COUCHBASE_PORT')) {

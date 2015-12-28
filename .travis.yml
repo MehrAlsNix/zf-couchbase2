@@ -24,7 +24,7 @@ before_install:
   - echo deb http://packages.couchbase.com/ubuntu precise precise/main | sudo tee /etc/apt/sources.list.d/couchbase.list
   - sudo apt-get update
   - sudo apt-get -y install libcouchbase-dev libcouchbase2-core libcouchbase2-libevent libevent-dev openjdk-7-jdk maven
-  - ps auxww | grep mem
+  - ps auxww
   - git clone git://github.com/couchbase/CouchbaseMock /tmp/CouchbaseMock
   - pushd /tmp/CouchbaseMock
   - mvn package

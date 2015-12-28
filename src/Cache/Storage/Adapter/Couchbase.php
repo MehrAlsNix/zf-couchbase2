@@ -83,8 +83,12 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
             $casToken = $document->cas;
             $success = true;
         } catch (\CouchbaseException $e) {
-            $result = null;
-            $success = false;
+            if ($e->getCode() === CouchbaseErrors::LCB_KEY_ENOENT) {
+                $result = null;
+                $success = false;
+            } else {
+                throw new Exception\RuntimeException($e->getMessage());
+            }
         }
 
         return $result;

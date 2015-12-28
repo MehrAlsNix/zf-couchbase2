@@ -64,34 +64,15 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
     }
 
     /**
-     * Internal method to get an item.
+     * Flush the whole storage
      *
-     * @param  string $normalizedKey
-     * @param  bool $success
-     * @param  mixed $casToken
-     * @return mixed Data on success, null on failure
-     * @throws Exception\ExceptionInterface
+     * @return bool
      */
-    protected function internalGetItem(& $normalizedKey, & $success = null, & $casToken = null)
+    public function flush()
     {
-        $internalKey = $this->namespacePrefix . $normalizedKey;
-        $memc = $this->getCouchbaseResource();
+        $this->getCouchbaseResource()->manager()->flush();
 
-        try {
-            $document = $memc->get($internalKey);
-            $result = $document->value;
-            $casToken = $document->cas;
-            $success = true;
-        } catch (\CouchbaseException $e) {
-            if ($e->getCode() === CouchbaseErrors::LCB_KEY_ENOENT) {
-                $result = null;
-                $success = false;
-            } else {
-                throw new Exception\RuntimeException($e->getMessage());
-            }
-        }
-
-        return $result;
+        return true;
     }
 
     /**
@@ -105,11 +86,10 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
     protected function internalSetItem(& $normalizedKey, & $value)
     {
         $memc = $this->getCouchbaseResource();
-        $expiry = $this->expirationTime();
         $internalKey = $this->namespacePrefix . $normalizedKey;
 
         try {
-            $memc->upsert($internalKey, $value, ['expiry' => $expiry]);
+            $memc->upsert($internalKey, $value, ['expiry' => $this->expirationTime()]);
         } catch (\CouchbaseException $e) {
             if ($e->getCode() === CouchbaseErrors::LCB_KEY_ENOENT) {
                 return false;
@@ -122,69 +102,62 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
     }
 
     /**
-     * Add an item.
+     * Initialize the internal memcached resource
      *
-     * @param  string $normalizedKey
-     * @param  mixed $value
-     * @return bool
-     * @throws Exception\ExceptionInterface
+     * @return \CouchbaseBucket
      */
-    protected function internalAddItem(& $normalizedKey, & $value)
+    protected function getCouchbaseResource()
     {
-        $memc = $this->getCouchbaseResource();
-        $expiration = $this->expirationTime();
-        $internalKey = $this->namespacePrefix . $normalizedKey;
-        try {
-            $memc->insert($internalKey, $value, ['expiry' => $expiration]);
-        } catch (\CouchbaseException $e) {
-            if ($e->getCode() === CouchbaseErrors::LCB_KEY_EEXISTS) {
-                return false;
+        if (!$this->initialized) {
+            $options = $this->getOptions();
+
+            // get resource manager and resource id
+            $this->resourceManager = $options->getResourceManager();
+            $this->resourceId = $options->getResourceId();
+
+            // init namespace prefix
+            $namespace = $options->getNamespace();
+            $this->namespacePrefix = '';
+
+            if ($namespace !== '') {
+                $this->namespacePrefix = $namespace . $options->getNamespaceSeparator();
             }
-            throw new Exception\RuntimeException($e);
+
+            // update initialized flag
+            $this->initialized = true;
         }
 
-        return true;
+        return $this->resourceManager->getResource($this->resourceId);
     }
 
     /**
-     * @param array $normalizedKeyValuePairs
-     * @return array|mixed
-     * @throws Exception\RuntimeException
+     * Get options.
+     *
+     * @return CouchbaseOptions
+     * @see setOptions()
      */
-    protected function internalAddItems(array & $normalizedKeyValuePairs)
+    public function getOptions()
     {
-        $memc = $this->getCouchbaseResource();
-        $expiration = $this->expirationTime();
-
-        $namespacedKeyValuePairs = [];
-        foreach ($normalizedKeyValuePairs as $normalizedKey => & $value) {
-            $namespacedKeyValuePairs[$this->namespacePrefix . $normalizedKey] = ['value' => & $value];
+        if (!$this->options) {
+            $this->setOptions(new CouchbaseOptions());
         }
-        unset($value);
+        return $this->options;
+    }
 
-        try {
-            $result = $memc->insert($namespacedKeyValuePairs, null, ['expiry' => $expiration]);
-        } catch (\CouchbaseException $e) {
-            throw new Exception\RuntimeException($e);
-        }
-
-        foreach ($result as $key => $document) {
-            if (!$document->error instanceof \CouchbaseException) {
-                unset($result[$key]);
-            }
+    /**
+     * Set options.
+     *
+     * @param  array|\Traversable|CouchbaseOptions $options
+     * @return \CouchbaseCluster
+     * @see    getOptions()
+     */
+    public function setOptions($options)
+    {
+        if (!$options instanceof CouchbaseOptions) {
+            $options = new CouchbaseOptions($options);
         }
 
-        $result = array_keys($result);
-
-        // remove namespace prefix
-        if ($result && $this->namespacePrefix !== '') {
-            $nsPrefixLength = strlen($this->namespacePrefix);
-            foreach ($result as & $internalKey) {
-                $internalKey = substr($internalKey, $nsPrefixLength);
-            }
-        }
-
-        return $result;
+        return parent::setOptions($options);
     }
 
     /**
@@ -211,6 +184,97 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
     }
 
     /**
+     * Add an item.
+     *
+     * @param  string $normalizedKey
+     * @param  mixed $value
+     * @return bool
+     * @throws Exception\ExceptionInterface
+     */
+    protected function internalAddItem(& $normalizedKey, & $value)
+    {
+        $memc = $this->getCouchbaseResource();
+        $internalKey = $this->namespacePrefix . $normalizedKey;
+        try {
+            $memc->insert($internalKey, $value, ['expiry' => $this->expirationTime()]);
+        } catch (\CouchbaseException $e) {
+            if ($e->getCode() === CouchbaseErrors::LCB_KEY_EEXISTS) {
+                return false;
+            }
+            throw new Exception\RuntimeException($e);
+        }
+
+        return true;
+    }
+
+    /**
+     * @param array $normalizedKeyValuePairs
+     * @return array|mixed
+     * @throws Exception\RuntimeException
+     */
+    protected function internalAddItems(array & $normalizedKeyValuePairs)
+    {
+        $memc = $this->getCouchbaseResource();
+
+        $namespacedKeyValuePairs = $this->namespacesKeyValuePairs($normalizedKeyValuePairs);
+
+        try {
+            $result = $memc->insert($namespacedKeyValuePairs, null, ['expiry' => $this->expirationTime()]);
+        } catch (\CouchbaseException $e) {
+            throw new Exception\RuntimeException($e);
+        }
+
+        $this->filterErrors($result);
+
+        return $result;
+    }
+
+    /**
+     * @param array $normalizedKeyValuePairs
+     * @return array
+     */
+    protected function namespacesKeyValuePairs(array & $normalizedKeyValuePairs)
+    {
+        $namespacedKeyValuePairs = [];
+
+        foreach ($normalizedKeyValuePairs as $normalizedKey => & $value) {
+            $namespacedKeyValuePairs[$this->namespacePrefix . $normalizedKey] = ['value' => & $value];
+        }
+        unset($value);
+
+        return $namespacedKeyValuePairs;
+    }
+
+    /**
+     * @param $result
+     */
+    protected function filterErrors(& $result)
+    {
+        foreach ($result as $key => $document) {
+            if (!$document->error instanceof \CouchbaseException) {
+                unset($result[$key]);
+            }
+        }
+
+        $result = array_keys($result);
+
+        $this->removeNamespacePrefix($result);
+    }
+
+    /**
+     * @param array $result
+     */
+    protected function removeNamespacePrefix(& $result)
+    {
+        if ($result && $this->namespacePrefix !== '') {
+            $nsPrefixLength = strlen($this->namespacePrefix);
+            foreach ($result as & $internalKey) {
+                $internalKey = substr($internalKey, $nsPrefixLength);
+            }
+        }
+    }
+
+    /**
      * Internal method to store multiple items.
      *
      * @param  array $normalizedKeyValuePairs
@@ -220,15 +284,10 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
     protected function internalSetItems(array & $normalizedKeyValuePairs)
     {
         $memc = $this->getCouchbaseResource();
-        $expiration = $this->expirationTime();
 
-        $namespacedKeyValuePairs = [];
-        foreach ($normalizedKeyValuePairs as $normalizedKey => & $value) {
-            $namespacedKeyValuePairs[$this->namespacePrefix . $normalizedKey] = ['value' => & $value];
-        }
-        unset($value);
+        $namespacedKeyValuePairs = $this->namespacesKeyValuePairs($normalizedKeyValuePairs);
 
-        $memc->upsert($namespacedKeyValuePairs, null, ['expiry' => $expiration]);
+        $memc->upsert($namespacedKeyValuePairs, null, ['expiry' => $this->expirationTime()]);
 
         return [];
     }
@@ -265,9 +324,7 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
     {
         $memc = $this->getCouchbaseResource();
 
-        foreach ($normalizedKeys as & $normalizedKey) {
-            $normalizedKey = $this->namespacePrefix . $normalizedKey;
-        }
+        $this->namespacesKeys($normalizedKeys);
 
         try {
             $result = $memc->remove($normalizedKeys);
@@ -275,23 +332,16 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
             throw new Exception\RuntimeException($e);
         }
 
-        foreach ($result as $key => $document) {
-            if (!$document->error instanceof \CouchbaseException) {
-                unset($result[$key]);
-            }
-        }
-
-        $result = array_keys($result);
-
-        // remove namespace prefix
-        if ($result && $this->namespacePrefix !== '') {
-            $nsPrefixLength = strlen($this->namespacePrefix);
-            foreach ($result as & $internalKey) {
-                $internalKey = substr($internalKey, $nsPrefixLength);
-            }
-        }
+        $this->filterErrors($result);
 
         return $result;
+    }
+
+    protected function namespacesKeys(array & $normalizedKeys)
+    {
+        foreach ($normalizedKeys as & $normalizedKey) {
+            $normalizedKey = $this->namespacePrefix . $normalizedKey;
+        }
     }
 
     /**
@@ -311,10 +361,9 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
         $key = $this->namespacePrefix . $normalizedKey;
         $success = null;
         $this->internalGetItem($key, $success, $token);
-        $expiration = $this->expirationTime();
 
         try {
-            $memc->replace($key, $value, ['cas' => $token, 'expiry' => $expiration]);
+            $memc->replace($key, $value, ['cas' => $token, 'expiry' => $this->expirationTime()]);
             $result = true;
         } catch (\CouchbaseException $e) {
             if ($e->getCode() === CouchbaseErrors::LCB_KEY_EEXISTS
@@ -323,6 +372,37 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
                 return false;
             }
             throw new Exception\RuntimeException($e);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Internal method to get an item.
+     *
+     * @param  string $normalizedKey
+     * @param  bool $success
+     * @param  mixed $casToken
+     * @return mixed Data on success, null on failure
+     * @throws Exception\ExceptionInterface
+     */
+    protected function internalGetItem(& $normalizedKey, & $success = null, & $casToken = null)
+    {
+        $internalKey = $this->namespacePrefix . $normalizedKey;
+        $memc = $this->getCouchbaseResource();
+
+        try {
+            $document = $memc->get($internalKey);
+            $result = $document->value;
+            $casToken = $document->cas;
+            $success = true;
+        } catch (\CouchbaseException $e) {
+            if ($e->getCode() === CouchbaseErrors::LCB_KEY_ENOENT) {
+                $result = null;
+                $success = false;
+            } else {
+                throw new Exception\RuntimeException($e->getMessage());
+            }
         }
 
         return $result;
@@ -413,9 +493,7 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
     {
         $memc = $this->getCouchbaseResource();
 
-        foreach ($normalizedKeys as & $normalizedKey) {
-            $normalizedKey = $this->namespacePrefix . $normalizedKey;
-        }
+        $this->namespacesKeys($normalizedKeys);
 
         try {
             $result = $memc->get($normalizedKeys);
@@ -432,13 +510,7 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
 
         $result = array_keys($result);
 
-        // remove namespace prefix
-        if ($result && $this->namespacePrefix !== '') {
-            $nsPrefixLength = strlen($this->namespacePrefix);
-            foreach ($result as & $internalKey) {
-                $internalKey = substr($internalKey, $nsPrefixLength);
-            }
-        }
+        $this->removeNamespacePrefix($result);
 
         return $result;
     }
@@ -454,9 +526,7 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
     {
         $memc = $this->getCouchbaseResource();
 
-        foreach ($normalizedKeys as & $normalizedKey) {
-            $normalizedKey = $this->namespacePrefix . $normalizedKey;
-        }
+        $this->namespacesKeys($normalizedKeys);
 
         try {
             $result = $memc->get($normalizedKeys);
@@ -514,77 +584,6 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
         }
 
         return $newValue;
-    }
-
-    /**
-     * Flush the whole storage
-     *
-     * @return bool
-     */
-    public function flush()
-    {
-        $this->getCouchbaseResource()->manager()->flush();
-
-        return true;
-    }
-
-    /**
-     * Initialize the internal memcached resource
-     *
-     * @return \CouchbaseBucket
-     */
-    protected function getCouchbaseResource()
-    {
-        if (!$this->initialized) {
-            $options = $this->getOptions();
-
-            // get resource manager and resource id
-            $this->resourceManager = $options->getResourceManager();
-            $this->resourceId = $options->getResourceId();
-
-            // init namespace prefix
-            $namespace = $options->getNamespace();
-            $this->namespacePrefix = '';
-
-            if ($namespace !== '') {
-                $this->namespacePrefix = $namespace . $options->getNamespaceSeparator();
-            }
-
-            // update initialized flag
-            $this->initialized = true;
-        }
-
-        return $this->resourceManager->getResource($this->resourceId);
-    }
-
-    /**
-     * Set options.
-     *
-     * @param  array|\Traversable|CouchbaseOptions $options
-     * @return \CouchbaseCluster
-     * @see    getOptions()
-     */
-    public function setOptions($options)
-    {
-        if (!$options instanceof CouchbaseOptions) {
-            $options = new CouchbaseOptions($options);
-        }
-
-        return parent::setOptions($options);
-    }
-
-    /**
-     * Get options.
-     *
-     * @return CouchbaseOptions
-     * @see setOptions()
-     */
-    public function getOptions()
-    {
-        if (!$this->options) {
-            $this->setOptions(new CouchbaseOptions());
-        }
-        return $this->options;
     }
 
     /**

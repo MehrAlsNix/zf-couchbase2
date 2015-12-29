@@ -9,7 +9,7 @@
   ],
   "require": {
     "php": ">=5.5.0",
-    "ext-couchbase": ">=2.1.0",
+    "ext-couchbase": ">=2.0",
     "zendframework/zend-cache": "~2.0"
   },
   "minimum-stability": "stable",

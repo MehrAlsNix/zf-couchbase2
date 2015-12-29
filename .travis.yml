@@ -27,7 +27,7 @@ before_install:
   - ps auxww
   - git clone git://github.com/couchbase/CouchbaseMock /tmp/CouchbaseMock
   - pushd /tmp/CouchbaseMock
-  - mvn package
+  - travis_retry mvn package
   - java -jar /tmp/CouchbaseMock/target/CouchbaseMock-*.jar &
   - popd
   - if [[ $EXECUTE_COVERAGE != 'true' ]]; then phpenv config-rm xdebug.ini || return 0 ; fi

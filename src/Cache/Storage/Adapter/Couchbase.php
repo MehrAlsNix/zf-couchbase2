@@ -71,7 +71,7 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
             $v = (string) phpversion('couchbase');
             static::$extCouchbaseMajorVersion = ($v !== '') ? (int) $v[0] : 0;
         }
-        if (static::$extCouchbaseMajorVersion < 1) {
+        if (static::$extCouchbaseMajorVersion < 2) {
             throw new Exception\ExtensionNotLoadedException('Need ext/couchbase version >= 2.0.0');
         }
         parent::__construct($options);
@@ -112,7 +112,7 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
         try {
             $memc->upsert($internalKey, $value, ['expiry' => $this->expirationTime()]);
         } catch (\CouchbaseException $e) {
-            if ($e->getCode() === CouchbaseErrors::LCB_KEY_ENOENT) {
+            if ($e->getCode() === \COUCHBASE_KEY_ENOENT) {
                 return false;
             }
 
@@ -226,7 +226,7 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
         try {
             $memc->insert($internalKey, $value, ['expiry' => $this->expirationTime()]);
         } catch (\CouchbaseException $e) {
-            if ($e->getCode() === CouchbaseErrors::LCB_KEY_EEXISTS) {
+            if ($e->getCode() === \COUCHBASE_KEY_EEXISTS) {
                 return false;
             }
             throw new Exception\RuntimeException($e);
@@ -406,8 +406,8 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
             $memc->replace($key, $value, ['cas' => $token, 'expiry' => $this->expirationTime()]);
             $result = true;
         } catch (\CouchbaseException $e) {
-            if ($e->getCode() === CouchbaseErrors::LCB_KEY_EEXISTS
-                || $e->getCode() === CouchbaseErrors::LCB_KEY_ENOENT
+            if ($e->getCode() === \COUCHBASE_KEY_EEXISTS
+                || $e->getCode() === \COUCHBASE_KEY_ENOENT
             ) {
                 return false;
             }
@@ -439,7 +439,7 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
             $casToken = $document->cas;
             $success = true;
         } catch (\CouchbaseException $e) {
-            if ($e->getCode() === CouchbaseErrors::LCB_KEY_ENOENT) {
+            if ($e->getCode() === \COUCHBASE_KEY_ENOENT) {
                 $result = null;
                 $success = false;
             } else {
@@ -491,8 +491,8 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
             $ttl = $this->getOptions()->getTtl();
             $redis->touch($this->namespacePrefix.$normalizedKey, $ttl);
         } catch (\CouchbaseException $e) {
-            if ($e->getCode() === CouchbaseErrors::LCB_KEY_EEXISTS
-                || $e->getCode() === CouchbaseErrors::LCB_KEY_ENOENT
+            if ($e->getCode() === \COUCHBASE_KEY_EEXISTS
+                || $e->getCode() === \COUCHBASE_KEY_ENOENT
             ) {
                 return false;
             }
@@ -519,7 +519,7 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
         try {
             $result = $memc->get($internalKey)->value;
         } catch (\CouchbaseException $e) {
-            if ($e->getCode() === CouchbaseErrors::LCB_KEY_ENOENT) {
+            if ($e->getCode() === \COUCHBASE_KEY_ENOENT) {
                 $result = false;
             } else {
                 throw new Exception\RuntimeException($e);
@@ -548,7 +548,7 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
             $result = $memc->get($normalizedKeys);
             foreach ($result as $key => $element) {
                 if ($element->error instanceof \CouchbaseException
-                    && $element->error->getCode() === CouchbaseErrors::LCB_KEY_ENOENT
+                    && $element->error->getCode() === \COUCHBASE_KEY_ENOENT
                 ) {
                     unset($result[$key]);
                 }
@@ -583,7 +583,7 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
             $result = $memc->get($normalizedKeys);
             foreach ($result as $key => $element) {
                 if ($element->error instanceof \CouchbaseException
-                    && $element->error->getCode() === CouchbaseErrors::LCB_KEY_ENOENT
+                    && $element->error->getCode() === \COUCHBASE_KEY_ENOENT
                 ) {
                     unset($result[$key]);
                 } else {
@@ -628,7 +628,7 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
             $newValue = $couchbaseBucket->counter($internalKey, $value, ['initial' => $value, 'expiry' => $this->expirationTime()])->value;
         } catch (\CouchbaseException $e) {
             try {
-                if ($e->getCode() === CouchbaseErrors::LCB_KEY_ENOENT) {
+                if ($e->getCode() === \COUCHBASE_KEY_ENOENT) {
                     $newValue = $couchbaseBucket->insert($internalKey, $value, ['expiry' => $this->expirationTime()])->value;
                 }
             } catch (\CouchbaseException $e) {

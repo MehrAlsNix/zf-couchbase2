@@ -67,6 +67,22 @@ class CouchbaseTest extends CommonAdapterTest
         parent::setUp();
     }
 
+    public function testLibOptionsSet()
+    {
+        $options = new CouchbaseOptions();
+        $options->setLibOptions([
+            'COMPRESSION' => false
+        ]);
+        $this->assertEquals($options->getResourceManager()->getLibOption(
+            $options->getResourceId(), \Memcached::OPT_COMPRESSION
+        ), false);
+        $couchbase = new Couchbase($options);
+        $this->assertEquals($couchbase->getOptions()->getLibOptions(), [
+            \Memcached::OPT_COMPRESSION => false
+        ]);
+    }
+
+
     public function tearDown()
     {
         if ($this->_storage) {

@@ -42,6 +42,11 @@ before_install:
 
 install:
   - travis_retry composer install --no-interaction --ignore-platform-reqs --prefer-source
+  - mkdir -p build/logs
 
 script:
-  - ./bin/phpunit
+  - ./bin/phpunit --coverage-clover build/logs/clover.xml
+
+after_script:
+  - wget https://scrutinizer-ci.com/ocular.phar
+  - php ocular.phar code-coverage:upload --format=php-clover build/logs/clover.xml

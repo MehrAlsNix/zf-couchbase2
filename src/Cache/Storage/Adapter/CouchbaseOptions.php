@@ -1,6 +1,6 @@
 <?php
 /**
- * zf-couchbase2
+ * zf-couchbase2.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -12,35 +12,35 @@
  *
  * @copyright 2015 MehrAlsNix (http://www.mehralsnix.de)
  * @license   http://www.opensource.org/licenses/mit-license.php MIT
+ *
  * @link      http://github.com/MehrAlsNix/zf-couchbase2
  */
-
 namespace MehrAlsNix\ZF\Cache\Storage\Adapter;
 
 use Zend\Cache\Exception;
 use Zend\Cache\Storage\Adapter\AdapterOptions;
 
 /**
- * Class CouchbaseOptions
- * @package MehrAlsNix\ZF\Cache\Storage\Adapter
+ * Class CouchbaseOptions.
  */
 class CouchbaseOptions extends AdapterOptions
 {
     /**
-     * The namespace separator
+     * The namespace separator.
+     *
      * @var string
      */
     protected $namespaceSeparator = ':';
 
     /**
-     * The couchbase resource manager
+     * The couchbase resource manager.
      *
      * @var null|CouchbaseResourceManager
      */
     protected $resourceManager;
 
     /**
-     * The resource id of the resource manager
+     * The resource id of the resource manager.
      *
      * @var string
      */
@@ -61,7 +61,7 @@ class CouchbaseOptions extends AdapterOptions
      */
     public function setNamespace($namespace)
     {
-        $namespace = (string)$namespace;
+        $namespace = (string) $namespace;
 
         if (128 < strlen($namespace)) {
             throw new Exception\InvalidArgumentException(sprintf(
@@ -74,23 +74,25 @@ class CouchbaseOptions extends AdapterOptions
     }
 
     /**
-     * Set namespace separator
+     * Set namespace separator.
      *
-     * @param  string $namespaceSeparator
+     * @param string $namespaceSeparator
+     *
      * @return CouchbaseOptions
      */
     public function setNamespaceSeparator($namespaceSeparator)
     {
-        $namespaceSeparator = (string)$namespaceSeparator;
+        $namespaceSeparator = (string) $namespaceSeparator;
         if ($this->namespaceSeparator !== $namespaceSeparator) {
             $this->triggerOptionEvent('namespace_separator', $namespaceSeparator);
             $this->namespaceSeparator = $namespaceSeparator;
         }
+
         return $this;
     }
 
     /**
-     * Get namespace separator
+     * Get namespace separator.
      *
      * @return string
      */
@@ -100,9 +102,10 @@ class CouchbaseOptions extends AdapterOptions
     }
 
     /**
-     * Set the couchbase resource manager to use
+     * Set the couchbase resource manager to use.
      *
      * @param null|CouchbaseResourceManager $resourceManager
+     *
      * @return CouchbaseOptions
      */
     public function setResourceManager(CouchbaseResourceManager $resourceManager = null)
@@ -111,11 +114,12 @@ class CouchbaseOptions extends AdapterOptions
             $this->triggerOptionEvent('resource_manager', $resourceManager);
             $this->resourceManager = $resourceManager;
         }
+
         return $this;
     }
 
     /**
-     * Get the couchbase resource manager
+     * Get the couchbase resource manager.
      *
      * @return CouchbaseResourceManager
      */
@@ -124,11 +128,12 @@ class CouchbaseOptions extends AdapterOptions
         if (!$this->resourceManager) {
             $this->resourceManager = new CouchbaseResourceManager();
         }
+
         return $this->resourceManager;
     }
 
     /**
-     * Get the couchbase resource id
+     * Get the couchbase resource id.
      *
      * @return string
      */
@@ -138,23 +143,25 @@ class CouchbaseOptions extends AdapterOptions
     }
 
     /**
-     * Set the couchbase resource id
+     * Set the couchbase resource id.
      *
      * @param string $resourceId
+     *
      * @return CouchbaseOptions
      */
     public function setResourceId($resourceId)
     {
-        $resourceId = (string)$resourceId;
+        $resourceId = (string) $resourceId;
         if ($this->resourceId !== $resourceId) {
             $this->triggerOptionEvent('resource_id', $resourceId);
             $this->resourceId = $resourceId;
         }
+
         return $this;
     }
 
     /**
-     * Get the persistent id
+     * Get the persistent id.
      *
      * @return string
      */
@@ -164,19 +171,21 @@ class CouchbaseOptions extends AdapterOptions
     }
 
     /**
-     * Set the persistent id
+     * Set the persistent id.
      *
      * @param string $password
+     *
      * @return CouchbaseOptions
      */
     public function setPassword($password)
     {
         $this->getResourceManager()->setPassword($this->getResourceId(), $password);
+
         return $this;
     }
 
     /**
-     * Get the persistent id
+     * Get the persistent id.
      *
      * @return string
      */
@@ -186,19 +195,21 @@ class CouchbaseOptions extends AdapterOptions
     }
 
     /**
-     * Set the persistent id
+     * Set the persistent id.
      *
      * @param string $username
+     *
      * @return CouchbaseOptions
      */
     public function setUsername($username)
     {
         $this->getResourceManager()->setUsername($this->getResourceId(), $username);
+
         return $this;
     }
 
     /**
-     * Get the persistent id
+     * Get the persistent id.
      *
      * @return string
      */
@@ -208,32 +219,37 @@ class CouchbaseOptions extends AdapterOptions
     }
 
     /**
-     * Set the persistent id
+     * Set the persistent id.
      *
      * @param string $bucket
+     *
      * @return CouchbaseOptions
      */
     public function setBucket($bucket)
     {
         $this->getResourceManager()->setBucket($this->getResourceId(), $bucket);
+
         return $this;
     }
 
     /**
-     * Set a list of couchbase servers to add on initialize
+     * Set a list of couchbase servers to add on initialize.
      *
      * @param string $server server
+     *
      * @return CouchbaseOptions
+     *
      * @throws Exception\InvalidArgumentException
      */
     public function setServer($server)
     {
         $this->getResourceManager()->setServer($this->getResourceId(), $server);
+
         return $this;
     }
 
     /**
-     * Get Servers
+     * Get Servers.
      *
      * @return array
      */
@@ -243,19 +259,21 @@ class CouchbaseOptions extends AdapterOptions
     }
 
     /**
-     * Set libmemcached options
+     * Set libmemcached options.
      *
      * @param array $libOptions
+     *
      * @return CouchbaseOptions
      */
     public function setLibOptions(array $libOptions)
     {
         $this->getResourceManager()->setLibOptions($this->getResourceId(), $libOptions);
+
         return $this;
     }
 
     /**
-     * Get libmemcached options
+     * Get libmemcached options.
      *
      * @return array
      */

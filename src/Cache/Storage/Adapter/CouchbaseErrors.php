@@ -1,6 +1,6 @@
 <?php
 /**
- * zf-couchbase2
+ * zf-couchbase2.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -12,17 +12,16 @@
  *
  * @copyright 2015 MehrAlsNix (http://www.mehralsnix.de)
  * @license   http://www.opensource.org/licenses/mit-license.php MIT
+ *
  * @link      http://github.com/MehrAlsNix/zf-couchbase2
  */
-
 namespace MehrAlsNix\ZF\Cache\Storage\Adapter;
 
 /**
- * Class CouchbaseErrors
- * @package MehrAlsNix\ZF\Cache\Storage\Adapter
+ * Class CouchbaseErrors.
  */
 class CouchbaseErrors
 {
     const LCB_KEY_EEXISTS = 12;
-    const LCB_KEY_ENOENT  = 13;
+    const LCB_KEY_ENOENT = 13;
 }

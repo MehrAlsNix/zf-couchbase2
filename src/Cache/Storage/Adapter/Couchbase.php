@@ -1,6 +1,6 @@
 <?php
 /**
- * zf-couchbase2
+ * zf-couchbase2.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -12,9 +12,9 @@
  *
  * @copyright 2015 MehrAlsNix (http://www.mehralsnix.de)
  * @license   http://www.opensource.org/licenses/mit-license.php MIT
+ *
  * @link      http://github.com/MehrAlsNix/zf-couchbase2
  */
-
 namespace MehrAlsNix\ZF\Cache\Storage\Adapter;
 
 use Zend\Cache\Exception;
@@ -23,13 +23,12 @@ use Zend\Cache\Storage\Capabilities;
 use Zend\Cache\Storage\FlushableInterface;
 
 /**
- * Class Couchbase
- * @package MehrAlsNix\ZF\Cache\Storage\Adapter
+ * Class Couchbase.
  */
 class Couchbase extends AbstractAdapter implements FlushableInterface
 {
     /**
-     * Major version of ext/couchbase
+     * Major version of ext/couchbase.
      *
      * @var null|int
      */
@@ -46,30 +45,31 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
     protected $resourceId;
 
     /**
-     * The namespace prefix
+     * The namespace prefix.
      *
      * @var string
      */
     protected $namespacePrefix = '';
 
     /**
-     * Has this instance be initialized
+     * Has this instance be initialized.
      *
      * @var bool
      */
     protected $initialized = false;
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param  null|array|\Traversable|CouchbaseOptions $options
+     * @param null|array|\Traversable|CouchbaseOptions $options
+     *
      * @throws Exception\ExceptionInterface
      */
     public function __construct($options = null)
     {
         if (static::$extCouchbaseMajorVersion === null) {
-            $v = (string)phpversion('couchbase');
-            static::$extCouchbaseMajorVersion = ($v !== '') ? (int)$v[0] : 0;
+            $v = (string) phpversion('couchbase');
+            static::$extCouchbaseMajorVersion = ($v !== '') ? (int) $v[0] : 0;
         }
         if (static::$extCouchbaseMajorVersion < 1) {
             throw new Exception\ExtensionNotLoadedException('Need ext/couchbase version >= 2.0.0');
@@ -77,13 +77,13 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
         parent::__construct($options);
         // reset initialized flag on update option(s)
         $initialized = &$this->initialized;
-        $this->getEventManager()->attach('option', function () use (& $initialized) {
+        $this->getEventManager()->attach('option', function () use (&$initialized) {
             $initialized = false;
         });
     }
 
     /**
-     * Flush the whole storage
+     * Flush the whole storage.
      *
      * @return bool
      */
@@ -97,15 +97,17 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
     /**
      * Internal method to store an item.
      *
-     * @param  string $normalizedKey
-     * @param  mixed $value
+     * @param string $normalizedKey
+     * @param mixed  $value
+     *
      * @return bool
+     *
      * @throws Exception\ExceptionInterface
      */
-    protected function internalSetItem(& $normalizedKey, & $value)
+    protected function internalSetItem(&$normalizedKey, &$value)
     {
         $memc = $this->getCouchbaseResource();
-        $internalKey = $this->namespacePrefix . $normalizedKey;
+        $internalKey = $this->namespacePrefix.$normalizedKey;
 
         try {
             $memc->upsert($internalKey, $value, ['expiry' => $this->expirationTime()]);
@@ -121,7 +123,7 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
     }
 
     /**
-     * Initialize the internal memcached resource
+     * Initialize the internal memcached resource.
      *
      * @return \CouchbaseBucket
      */
@@ -139,7 +141,7 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
             $this->namespacePrefix = '';
 
             if ($namespace !== '') {
-                $this->namespacePrefix = $namespace . $options->getNamespaceSeparator();
+                $this->namespacePrefix = $namespace.$options->getNamespaceSeparator();
             }
 
             // update initialized flag
@@ -153,6 +155,7 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
      * Get options.
      *
      * @return CouchbaseOptions
+     *
      * @see setOptions()
      */
     public function getOptions()
@@ -160,14 +163,17 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
         if (!$this->options) {
             $this->setOptions(new CouchbaseOptions());
         }
+
         return $this->options;
     }
 
     /**
      * Set options.
      *
-     * @param  array|\Traversable|CouchbaseOptions $options
+     * @param array|\Traversable|CouchbaseOptions $options
+     *
      * @return \CouchbaseCluster
+     *
      * @see    getOptions()
      */
     public function setOptions($options)
@@ -180,7 +186,7 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
     }
 
     /**
-     * Get expiration time by ttl
+     * Get expiration time by ttl.
      *
      * Some storage commands involve sending an expiration value (relative to
      * an item or to an operation requested by the client) to the server. In
@@ -199,21 +205,24 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
         if ($ttl > 2592000) {
             return time() + $ttl;
         }
+
         return $ttl;
     }
 
     /**
      * Add an item.
      *
-     * @param  string $normalizedKey
-     * @param  mixed $value
+     * @param string $normalizedKey
+     * @param mixed  $value
+     *
      * @return bool
+     *
      * @throws Exception\ExceptionInterface
      */
-    protected function internalAddItem(& $normalizedKey, & $value)
+    protected function internalAddItem(&$normalizedKey, &$value)
     {
         $memc = $this->getCouchbaseResource();
-        $internalKey = $this->namespacePrefix . $normalizedKey;
+        $internalKey = $this->namespacePrefix.$normalizedKey;
         try {
             $memc->insert($internalKey, $value, ['expiry' => $this->expirationTime()]);
         } catch (\CouchbaseException $e) {
@@ -228,10 +237,12 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
 
     /**
      * @param array $normalizedKeyValuePairs
+     *
      * @return array|mixed
+     *
      * @throws Exception\RuntimeException
      */
-    protected function internalAddItems(array & $normalizedKeyValuePairs)
+    protected function internalAddItems(array &$normalizedKeyValuePairs)
     {
         $memc = $this->getCouchbaseResource();
 
@@ -250,14 +261,15 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
 
     /**
      * @param array $normalizedKeyValuePairs
+     *
      * @return array
      */
-    protected function namespacesKeyValuePairs(array & $normalizedKeyValuePairs)
+    protected function namespacesKeyValuePairs(array &$normalizedKeyValuePairs)
     {
         $namespacedKeyValuePairs = [];
 
-        foreach ($normalizedKeyValuePairs as $normalizedKey => & $value) {
-            $namespacedKeyValuePairs[$this->namespacePrefix . $normalizedKey] = ['value' => & $value];
+        foreach ($normalizedKeyValuePairs as $normalizedKey => &$value) {
+            $namespacedKeyValuePairs[$this->namespacePrefix.$normalizedKey] = ['value' => &$value];
         }
         unset($value);
 
@@ -267,7 +279,7 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
     /**
      * @param $result
      */
-    protected function filterErrors(& $result)
+    protected function filterErrors(&$result)
     {
         foreach ($result as $key => $document) {
             if (!$document->error instanceof \CouchbaseException) {
@@ -283,11 +295,11 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
     /**
      * @param array $result
      */
-    protected function removeNamespacePrefix(& $result)
+    protected function removeNamespacePrefix(&$result)
     {
         if ($result && $this->namespacePrefix !== '') {
             $nsPrefixLength = strlen($this->namespacePrefix);
-            foreach ($result as & $internalKey) {
+            foreach ($result as &$internalKey) {
                 $internalKey = substr($internalKey, $nsPrefixLength);
             }
         }
@@ -296,11 +308,13 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
     /**
      * Internal method to store multiple items.
      *
-     * @param  array $normalizedKeyValuePairs
+     * @param array $normalizedKeyValuePairs
+     *
      * @return array Array of not stored keys
+     *
      * @throws Exception\ExceptionInterface
      */
-    protected function internalSetItems(array & $normalizedKeyValuePairs)
+    protected function internalSetItems(array &$normalizedKeyValuePairs)
     {
         $memc = $this->getCouchbaseResource();
 
@@ -314,17 +328,19 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
     /**
      * Internal method to remove an item.
      *
-     * @param  string $normalizedKey
+     * @param string $normalizedKey
+     *
      * @return bool
+     *
      * @throws Exception\ExceptionInterface
      */
-    protected function internalRemoveItem(& $normalizedKey)
+    protected function internalRemoveItem(&$normalizedKey)
     {
         $memc = $this->getCouchbaseResource();
         $result = true;
 
         try {
-            $memc->remove($this->namespacePrefix . $normalizedKey);
+            $memc->remove($this->namespacePrefix.$normalizedKey);
         } catch (\CouchbaseException $e) {
             $result = false;
         }
@@ -335,11 +351,13 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
     /**
      * Internal method to remove multiple items.
      *
-     * @param  array $normalizedKeys
+     * @param array $normalizedKeys
+     *
      * @return array Array of not removed keys
+     *
      * @throws Exception\ExceptionInterface
      */
-    protected function internalRemoveItems(array & $normalizedKeys)
+    protected function internalRemoveItems(array &$normalizedKeys)
     {
         $memc = $this->getCouchbaseResource();
 
@@ -356,28 +374,31 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
         return $result;
     }
 
-    protected function namespacesKeys(array & $normalizedKeys)
+    protected function namespacesKeys(array &$normalizedKeys)
     {
-        foreach ($normalizedKeys as & $normalizedKey) {
-            $normalizedKey = $this->namespacePrefix . $normalizedKey;
+        foreach ($normalizedKeys as &$normalizedKey) {
+            $normalizedKey = $this->namespacePrefix.$normalizedKey;
         }
     }
 
     /**
-     * Internal method to set an item only if token matches
+     * Internal method to set an item only if token matches.
      *
-     * @param  mixed $token
-     * @param  string $normalizedKey
-     * @param  mixed $value
+     * @param mixed  $token
+     * @param string $normalizedKey
+     * @param mixed  $value
+     *
      * @return bool
+     *
      * @throws Exception\ExceptionInterface
+     *
      * @see    getItem()
      * @see    setItem()
      */
-    protected function internalCheckAndSetItem(& $token, & $normalizedKey, & $value)
+    protected function internalCheckAndSetItem(&$token, &$normalizedKey, &$value)
     {
         $memc = $this->getCouchbaseResource();
-        $key = $this->namespacePrefix . $normalizedKey;
+        $key = $this->namespacePrefix.$normalizedKey;
         $success = null;
         $this->internalGetItem($key, $success, $token);
 
@@ -399,15 +420,17 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
     /**
      * Internal method to get an item.
      *
-     * @param  string $normalizedKey
-     * @param  bool $success
-     * @param  mixed $casToken
+     * @param string $normalizedKey
+     * @param bool   $success
+     * @param mixed  $casToken
+     *
      * @return mixed Data on success, null on failure
+     *
      * @throws Exception\ExceptionInterface
      */
-    protected function internalGetItem(& $normalizedKey, & $success = null, & $casToken = null)
+    protected function internalGetItem(&$normalizedKey, &$success = null, &$casToken = null)
     {
-        $internalKey = $this->namespacePrefix . $normalizedKey;
+        $internalKey = $this->namespacePrefix.$normalizedKey;
         $memc = $this->getCouchbaseResource();
 
         try {
@@ -428,21 +451,23 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
     }
 
     /**
-     * Internal method to set an item only if token matches
+     * Internal method to set an item only if token matches.
      *
-     * @param  string $normalizedKey
-     * @param  mixed $value
+     * @param string $normalizedKey
+     * @param mixed  $value
+     *
      * @return bool
+     *
      * @throws Exception\ExceptionInterface
      */
-    protected function internalReplaceItem(& $normalizedKey, & $value)
+    protected function internalReplaceItem(&$normalizedKey, &$value)
     {
         $result = true;
 
         $memc = $this->getCouchbaseResource();
         $expiration = $this->expirationTime();
         try {
-            $memc->replace($this->namespacePrefix . $normalizedKey, $value, ['expiry' => $expiration]);
+            $memc->replace($this->namespacePrefix.$normalizedKey, $value, ['expiry' => $expiration]);
         } catch (\CouchbaseException $e) {
             $result = false;
         }
@@ -456,14 +481,15 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
      * @param string &$normalizedKey Key which will be touched
      *
      * @return bool
+     *
      * @throws Exception\RuntimeException
      */
-    protected function internalTouchItem(& $normalizedKey)
+    protected function internalTouchItem(&$normalizedKey)
     {
         $redis = $this->getCouchbaseResource();
         try {
             $ttl = $this->getOptions()->getTtl();
-            $redis->touch($this->namespacePrefix . $normalizedKey, $ttl);
+            $redis->touch($this->namespacePrefix.$normalizedKey, $ttl);
         } catch (\CouchbaseException $e) {
             if ($e->getCode() === CouchbaseErrors::LCB_KEY_EEXISTS
                 || $e->getCode() === CouchbaseErrors::LCB_KEY_ENOENT
@@ -479,14 +505,16 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
     /**
      * Internal method to test if an item exists.
      *
-     * @param  string $normalizedKey
+     * @param string $normalizedKey
+     *
      * @return bool
+     *
      * @throws Exception\ExceptionInterface
      */
-    protected function internalHasItem(& $normalizedKey)
+    protected function internalHasItem(&$normalizedKey)
     {
         $memc = $this->getCouchbaseResource();
-        $internalKey = $this->namespacePrefix . $normalizedKey;
+        $internalKey = $this->namespacePrefix.$normalizedKey;
 
         try {
             $result = $memc->get($internalKey)->value;
@@ -498,17 +526,19 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
             }
         }
 
-        return (bool)$result;
+        return (bool) $result;
     }
 
     /**
      * Internal method to test multiple items.
      *
-     * @param  array $normalizedKeys
+     * @param array $normalizedKeys
+     *
      * @return array Array of found keys
+     *
      * @throws Exception\ExceptionInterface
      */
-    protected function internalHasItems(array & $normalizedKeys)
+    protected function internalHasItems(array &$normalizedKeys)
     {
         $memc = $this->getCouchbaseResource();
 
@@ -537,11 +567,13 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
     /**
      * Internal method to get multiple items.
      *
-     * @param  array $normalizedKeys
+     * @param array $normalizedKeys
+     *
      * @return array Associative array of keys and values
+     *
      * @throws Exception\ExceptionInterface
      */
-    protected function internalGetItems(array & $normalizedKeys)
+    protected function internalGetItems(array &$normalizedKeys)
     {
         $memc = $this->getCouchbaseResource();
 
@@ -578,16 +610,18 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
     /**
      * Internal method to increment an item.
      *
-     * @param  string $normalizedKey
-     * @param  int $value
+     * @param string $normalizedKey
+     * @param int    $value
+     *
      * @return int|bool The new value on success, false on failure
+     *
      * @throws Exception\ExceptionInterface
      */
-    protected function internalIncrementItem(& $normalizedKey, & $value)
+    protected function internalIncrementItem(&$normalizedKey, &$value)
     {
         $couchbaseBucket = $this->getCouchbaseResource();
-        $internalKey = $this->namespacePrefix . $normalizedKey;
-        $value = (int)$value;
+        $internalKey = $this->namespacePrefix.$normalizedKey;
+        $value = (int) $value;
         $newValue = false;
 
         try {
@@ -606,7 +640,7 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
     }
 
     /**
-     * Internal method to get capabilities of this adapter
+     * Internal method to get capabilities of this adapter.
      *
      * @return Capabilities
      */

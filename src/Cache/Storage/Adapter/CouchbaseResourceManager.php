@@ -1,6 +1,6 @@
 <?php
 /**
- * zf-couchbase2
+ * zf-couchbase2.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -12,9 +12,9 @@
  *
  * @copyright 2015 MehrAlsNix (http://www.mehralsnix.de)
  * @license   http://www.opensource.org/licenses/mit-license.php MIT
+ *
  * @link      http://github.com/MehrAlsNix/zf-couchbase2
  */
-
 namespace MehrAlsNix\ZF\Cache\Storage\Adapter;
 
 use CouchbaseBucket as CouchbaseBucketResource;
@@ -23,22 +23,24 @@ use Zend\Cache\Exception;
 use Zend\Stdlib\ArrayUtils;
 
 /**
- * Class CouchbaseResourceManager
- * @package MehrAlsNix\ZF\Cache\Storage\Adapter
+ * Class CouchbaseResourceManager.
  */
 class CouchbaseResourceManager
 {
     /**
-     * Registered resources
+     * Registered resources.
      *
      * @var array
      */
     protected $resources = [];
 
     /**
-     * Get servers
+     * Get servers.
+     *
      * @param string $id
+     *
      * @throws Exception\RuntimeException
+     *
      * @return array array('host' => <host>, 'port' => <port>)
      */
     public function getServer($id)
@@ -50,14 +52,16 @@ class CouchbaseResourceManager
         if ($resource instanceof CouchbaseBucketResource) {
             return $resource->manager()->info()['hostname'];
         }
+
         return $resource['server'];
     }
 
     /**
      * Normalize one server into the following format:
-     * array('host' => <host>, 'port' => <port>, 'weight' => <weight>)
+     * array('host' => <host>, 'port' => <port>, 'weight' => <weight>).
      *
      * @param string|array &$server
+     *
      * @throws Exception\InvalidArgumentException
      * @throws \Zend\Stdlib\Exception\InvalidArgumentException
      */
@@ -72,26 +76,26 @@ class CouchbaseResourceManager
         if (is_array($server)) {
             // array(<host>[, <port>])
             if (isset($server[0])) {
-                $host = (string)$server[0];
-                $port = isset($server[1]) ? (int)$server[1] : $port;
+                $host = (string) $server[0];
+                $port = isset($server[1]) ? (int) $server[1] : $port;
             }
             // array('host' => <host>[, 'port' => <port>])
             if (!isset($server[0]) && isset($server['host'])) {
-                $host = (string)$server['host'];
-                $port = isset($server['port']) ? (int)$server['port'] : $port;
+                $host = (string) $server['host'];
+                $port = isset($server['port']) ? (int) $server['port'] : $port;
             }
         } else {
             // parse server from URI host{:?port}
             $server = trim($server);
             if (strpos($server, '://') === false) {
-                $server = 'http://' . $server;
+                $server = 'http://'.$server;
             }
             $server = parse_url($server);
             if (!$server) {
                 throw new Exception\InvalidArgumentException('Invalid server given');
             }
             $host = $server['host'];
-            $port = isset($server['port']) ? (int)$server['port'] : $port;
+            $port = isset($server['port']) ? (int) $server['port'] : $port;
             if (isset($server['query'])) {
                 $query = null;
                 parse_str($server['query'], $query);
@@ -102,14 +106,15 @@ class CouchbaseResourceManager
         }
         $server = [
             'host' => $host,
-            'port' => $port
+            'port' => $port,
         ];
     }
 
     /**
-     * Check if a resource exists
+     * Check if a resource exists.
      *
      * @param string $id
+     *
      * @return bool
      */
     public function hasResource($id)
@@ -118,10 +123,12 @@ class CouchbaseResourceManager
     }
 
     /**
-     * Gets a couchbase cluster resource
+     * Gets a couchbase cluster resource.
      *
      * @param string $id
+     *
      * @return \CouchbaseBucket
+     *
      * @throws Exception\RuntimeException
      */
     public function getResource($id)
@@ -133,8 +140,8 @@ class CouchbaseResourceManager
         if ($resource instanceof \CouchbaseBucket) {
             return $resource;
         }
-        $memc = new CouchbaseClusterResource('couchbase://' . $resource['server'][0]['host'] . ':' . $resource['server'][0]['port'], (string)$resource['username'], (string)$resource['password']);
-        $bucket = $memc->openBucket((string)$resource['bucket'], (string)$resource['password']);
+        $memc = new CouchbaseClusterResource('couchbase://'.$resource['server'][0]['host'].':'.$resource['server'][0]['port'], (string) $resource['username'], (string) $resource['password']);
+        $bucket = $memc->openBucket((string) $resource['bucket'], (string) $resource['password']);
         /*
         $bucket->setTranscoder(
             '\MehrAlsNix\ZF\Cache\Storage\Adapter\CouchbaseResourceManager::encoder',
@@ -144,21 +151,24 @@ class CouchbaseResourceManager
 
         // buffer and return
         $this->resources[$id] = $bucket;
+
         return $bucket;
     }
 
     /**
-     * Set a resource
+     * Set a resource.
      *
-     * @param string $id
+     * @param string                                     $id
      * @param array|\Traversable|CouchbaseBucketResource $resource
+     *
      * @return CouchbaseResourceManager Fluent interface
+     *
      * @throws \Zend\Stdlib\Exception\InvalidArgumentException
      * @throws Exception\InvalidArgumentException
      */
     public function setResource($id, $resource)
     {
-        $id = (string)$id;
+        $id = (string) $id;
         if (!($resource instanceof CouchbaseBucketResource)) {
             if ($resource instanceof \Traversable) {
                 $resource = ArrayUtils::iteratorToArray($resource);
@@ -172,23 +182,25 @@ class CouchbaseResourceManager
                 'server' => '',
                 'username' => '',
                 'password' => '',
-                'bucket' => ''
+                'bucket' => '',
             ], $resource);
             // normalize and validate params
             $this->normalizeServers($resource['server']);
             $this->normalizeLibOptions($resource['lib_options']);
         }
         $this->resources[$id] = $resource;
+
         return $this;
     }
 
     /**
-     * Normalize libmemcached options
+     * Normalize libmemcached options.
      *
      * @param array|\Traversable $libOptions
+     *
      * @throws Exception\InvalidArgumentException
      */
-    protected function normalizeLibOptions(& $libOptions)
+    protected function normalizeLibOptions(&$libOptions)
     {
         if (!is_array($libOptions) && !($libOptions instanceof \Traversable)) {
             throw new Exception\InvalidArgumentException(
@@ -206,16 +218,17 @@ class CouchbaseResourceManager
     }
 
     /**
-     * Convert option name into it's constant value
+     * Convert option name into it's constant value.
      *
      * @param string|int $key
+     *
      * @throws Exception\InvalidArgumentException
      */
-    protected function normalizeLibOptionKey(& $key)
+    protected function normalizeLibOptionKey(&$key)
     {
         // convert option name into it's constant value
         if (is_string($key)) {
-            $const = '\\COUCHBASE_SERTYPE_' . str_replace([' ', '-'], '_', strtoupper($key));
+            $const = '\\COUCHBASE_SERTYPE_'.str_replace([' ', '-'], '_', strtoupper($key));
             if (!defined($const)) {
                 throw new Exception\InvalidArgumentException("Unknown libcouchbase option '{$key}' ({$const})");
             }
@@ -226,33 +239,36 @@ class CouchbaseResourceManager
     }
 
     /**
-     * Set Libmemcached options
+     * Set Libmemcached options.
      *
      * @param string $id
      * @param array  $libOptions
+     *
      * @return CouchbaseResourceManager Fluent interface
      */
     public function setLibOptions($id, array $libOptions)
     {
         if (!$this->hasResource($id)) {
             return $this->setResource($id, [
-                'lib_options' => $libOptions
+                'lib_options' => $libOptions,
             ]);
         }
 
         $this->normalizeLibOptions($libOptions);
 
-        $resource = & $this->resources[$id];
+        $resource = &$this->resources[$id];
         $resource['lib_options'] = $libOptions;
 
         return $this;
     }
 
     /**
-     * Get Libmemcached options
+     * Get Libmemcached options.
      *
      * @param string $id
+     *
      * @return array
+     *
      * @throws Exception\RuntimeException
      */
     public function getLibOptions($id)
@@ -261,36 +277,40 @@ class CouchbaseResourceManager
             throw new Exception\RuntimeException("No resource with id '{$id}'");
         }
 
-        $resource = & $this->resources[$id];
+        $resource = &$this->resources[$id];
 
         if ($resource instanceof MemcachedResource) {
             $libOptions = [];
             $reflection = new ReflectionClass('Memcached');
-            $constants  = $reflection->getConstants();
+            $constants = $reflection->getConstants();
             foreach ($constants as $constName => $constValue) {
                 if (substr($constName, 0, 4) == 'OPT_') {
                     $libOptions[$constValue] = $resource->getOption($constValue);
                 }
             }
+
             return $libOptions;
         }
+
         return $resource['lib_options'];
     }
 
     /**
-     * Remove a resource
+     * Remove a resource.
      *
      * @param string $id
+     *
      * @return CouchbaseResourceManager Fluent interface
      */
     public function removeResource($id)
     {
         unset($this->resources[$id]);
+
         return $this;
     }
 
     /**
-     * Set servers
+     * Set servers.
      *
      * $servers can be an array list or a comma separated list of servers.
      * One server in the list can be descripted as follows:
@@ -300,13 +320,14 @@ class CouchbaseResourceManager
      *
      * @param string $id
      * @param string $server
+     *
      * @return CouchbaseResourceManager
      */
     public function setServer($id, $server)
     {
         if (!$this->hasResource($id)) {
             return $this->setResource($id, [
-                'server' => $server
+                'server' => $server,
             ]);
         }
         $this->normalizeServers($server);
@@ -317,17 +338,18 @@ class CouchbaseResourceManager
     }
 
     /**
-     * Add servers
+     * Add servers.
      *
-     * @param string $id
+     * @param string       $id
      * @param string|array $servers
+     *
      * @return CouchbaseResourceManager
      */
     public function addServers($id, $servers)
     {
         if (!$this->hasResource($id)) {
             return $this->setResource($id, [
-                'servers' => $servers
+                'servers' => $servers,
             ]);
         }
         $this->normalizeServers($servers);
@@ -345,14 +367,16 @@ class CouchbaseResourceManager
                 array_udiff($servers, $resource['servers'], [$this, 'compareServers'])
             );
         }
+
         return $this;
     }
 
     /**
-     * Add one server
+     * Add one server.
      *
-     * @param string $id
+     * @param string       $id
      * @param string|array $server
+     *
      * @return CouchbaseResourceManager
      */
     public function addServer($id, $server)
@@ -361,7 +385,7 @@ class CouchbaseResourceManager
     }
 
     /**
-     * Set servers
+     * Set servers.
      *
      * $servers can be an array list or a comma separated list of servers.
      * One server in the list can be descripted as follows:
@@ -371,13 +395,14 @@ class CouchbaseResourceManager
      *
      * @param string $id
      * @param string $username
+     *
      * @return CouchbaseResourceManager
      */
     public function setUsername($id, $username)
     {
         if (!$this->hasResource($id)) {
             return $this->setResource($id, [
-                'username' => $username
+                'username' => $username,
             ]);
         }
 
@@ -394,11 +419,12 @@ class CouchbaseResourceManager
         }
 
         $resource = &$this->resources[$id];
+
         return $resource['username'];
     }
 
     /**
-     * Set servers
+     * Set servers.
      *
      * $servers can be an array list or a comma separated list of servers.
      * One server in the list can be descripted as follows:
@@ -408,13 +434,14 @@ class CouchbaseResourceManager
      *
      * @param string $id
      * @param string $bucket
+     *
      * @return CouchbaseResourceManager
      */
     public function setBucket($id, $bucket)
     {
         if (!$this->hasResource($id)) {
             return $this->setResource($id, [
-                'bucket' => $bucket
+                'bucket' => $bucket,
             ]);
         }
 
@@ -431,11 +458,12 @@ class CouchbaseResourceManager
         }
 
         $resource = &$this->resources[$id];
+
         return $resource['bucket'];
     }
 
     /**
-     * Set servers
+     * Set servers.
      *
      * $servers can be an array list or a comma separated list of servers.
      * One server in the list can be descripted as follows:
@@ -445,13 +473,14 @@ class CouchbaseResourceManager
      *
      * @param string $id
      * @param string $password
+     *
      * @return CouchbaseResourceManager
      */
     public function setPassword($id, $password)
     {
         if (!$this->hasResource($id)) {
             return $this->setResource($id, [
-                'password' => $password
+                'password' => $password,
             ]);
         }
 
@@ -468,17 +497,19 @@ class CouchbaseResourceManager
         }
 
         $resource = &$this->resources[$id];
+
         return $resource['password'];
     }
 
     /**
      * Normalize a list of servers into the following format:
-     * array(array('host' => <host>, 'port' => <port>, 'weight' => <weight>)[, ...])
+     * array(array('host' => <host>, 'port' => <port>, 'weight' => <weight>)[, ...]).
      *
      * @param string|array $servers
+     *
      * @throws \Zend\Stdlib\Exception\InvalidArgumentException
      */
-    protected function normalizeServers(& $servers)
+    protected function normalizeServers(&$servers)
     {
         if (!is_array($servers) && !$servers instanceof \Traversable) {
             // Convert string into a list of servers
@@ -487,26 +518,28 @@ class CouchbaseResourceManager
         $result = [];
         foreach ($servers as $server) {
             $this->normalizeServer($server);
-            $result[$server['host'] . ':' . $server['port']] = $server;
+            $result[$server['host'].':'.$server['port']] = $server;
         }
         $servers = array_values($result);
     }
 
     /**
      * Compare 2 normalized server arrays
-     * (Compares only the host and the port)
+     * (Compares only the host and the port).
      *
      * @param array $serverA
      * @param array $serverB
+     *
      * @return int
      */
     protected function compareServers(array $serverA, array $serverB)
     {
-        $keyA = $serverA['host'] . ':' . $serverA['port'];
-        $keyB = $serverB['host'] . ':' . $serverB['port'];
+        $keyA = $serverA['host'].':'.$serverA['port'];
+        $keyB = $serverB['host'].':'.$serverB['port'];
         if ($keyA === $keyB) {
             return 0;
         }
+
         return $keyA > $keyB ? 1 : -1;
     }
 }

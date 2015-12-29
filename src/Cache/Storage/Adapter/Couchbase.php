@@ -7,6 +7,10 @@ use Zend\Cache\Storage\Adapter\AbstractAdapter;
 use Zend\Cache\Storage\Capabilities;
 use Zend\Cache\Storage\FlushableInterface;
 
+/**
+ * Class Couchbase
+ * @package MehrAlsNix\ZF\Cache\Storage\Adapter
+ */
 class Couchbase extends AbstractAdapter implements FlushableInterface
 {
     /**
@@ -256,9 +260,7 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
             }
         }
 
-        $result = array_keys($result);
-
-        $this->removeNamespacePrefix($result);
+        $this->removeNamespacePrefix(array_keys($result));
     }
 
     /**
@@ -508,9 +510,7 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
             return [];
         }
 
-        $result = array_keys($result);
-
-        $this->removeNamespacePrefix($result);
+        $this->removeNamespacePrefix(array_keys($result));
 
         return $result;
     }
@@ -545,7 +545,7 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
 
         // remove namespace prefix from result
         if ($result && $this->namespacePrefix !== '') {
-            $tmp            = [];
+            $tmp = [];
             $nsPrefixLength = strlen($this->namespacePrefix);
             foreach ($result as $internalKey => $value) {
                 $tmp[substr($internalKey, $nsPrefixLength)] = $value instanceof \CouchbaseMetaDoc ? $value->value : $value;
@@ -566,17 +566,17 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
      */
     protected function internalIncrementItem(& $normalizedKey, & $value)
     {
-        $memc = $this->getCouchbaseResource();
+        $couchbaseBucket = $this->getCouchbaseResource();
         $internalKey = $this->namespacePrefix . $normalizedKey;
         $value = (int)$value;
         $newValue = false;
 
         try {
-            $newValue = $memc->counter($internalKey, $value, ['initial' => $value, 'expiry' => $this->expirationTime()])->value;
+            $newValue = $couchbaseBucket->counter($internalKey, $value, ['initial' => $value, 'expiry' => $this->expirationTime()])->value;
         } catch (\CouchbaseException $e) {
             try {
                 if ($e->getCode() === CouchbaseErrors::LCB_KEY_ENOENT) {
-                    $newValue = $memc->insert($internalKey, $value, ['expiry' => $this->expirationTime()])->value;
+                    $newValue = $couchbaseBucket->insert($internalKey, $value, ['expiry' => $this->expirationTime()])->value;
                 }
             } catch (\CouchbaseException $e) {
                 throw new Exception\RuntimeException($e);

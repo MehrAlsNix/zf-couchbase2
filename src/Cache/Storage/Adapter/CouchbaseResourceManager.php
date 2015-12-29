@@ -490,14 +490,4 @@ class CouchbaseResourceManager
         }
         return $keyA > $keyB ? 1 : -1;
     }
-
-    private function encoder()
-    {
-
-    }
-
-    private function decoder()
-    {
-
-    }
 }

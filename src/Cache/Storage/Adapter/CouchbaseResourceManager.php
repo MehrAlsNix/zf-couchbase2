@@ -88,7 +88,7 @@ class CouchbaseResourceManager
             // parse server from URI host{:?port}
             $server = trim($server);
             if (strpos($server, '://') === false) {
-                $server = 'http://'.$server;
+                $server = 'couchbase://'.$server;
             }
             $server = parse_url($server);
             if (!$server) {
@@ -140,7 +140,7 @@ class CouchbaseResourceManager
         if ($resource instanceof \CouchbaseBucket) {
             return $resource;
         }
-        $memc = new CouchbaseClusterResource('couchbase://'.$resource['server'][0]['host'].':'.$resource['server'][0]['port'], (string) $resource['username'], (string) $resource['password']);
+        $memc = new CouchbaseClusterResource('couchbase://'.$resource['server'][0]['host'].':'.$resource['server'][0]['port'], (string) $resource['username'], (string) $resource['password'], \COUCHBASE_SERTYPE_PHP);
         $bucket = $memc->openBucket((string) $resource['bucket'], (string) $resource['password']);
         /*
         $bucket->setTranscoder(
@@ -228,7 +228,7 @@ class CouchbaseResourceManager
     {
         // convert option name into it's constant value
         if (is_string($key)) {
-            $const = '\\COUCHBASE_SERTYPE_'.str_replace([' ', '-'], '_', strtoupper($key));
+            $const = '\\COUCHBASE_'.str_replace([' ', '-'], '_', strtoupper($key));
             if (!defined($const)) {
                 throw new Exception\InvalidArgumentException("Unknown libcouchbase option '{$key}' ({$const})");
             }

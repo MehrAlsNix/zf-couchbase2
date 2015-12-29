@@ -1,4 +1,19 @@
 <?php
+/**
+ * zf-couchbase2
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * @copyright 2015 MehrAlsNix (http://www.mehralsnix.de)
+ * @license   http://www.opensource.org/licenses/mit-license.php MIT
+ * @link      http://github.com/MehrAlsNix/zf-couchbase2
+ */
 
 namespace MehrAlsNix\Test\ZF\Cache\Storage\Adapter;
 
@@ -6,6 +21,10 @@ use MehrAlsNix\ZF\Cache\Storage\Adapter\Couchbase;
 use MehrAlsNix\ZF\Cache\Storage\Adapter\CouchbaseOptions;
 use Zend\Cache\Exception\ExtensionNotLoadedException;
 
+/**
+ * Class CouchbaseTest
+ * @package MehrAlsNix\Test\ZF\Cache\Storage\Adapter
+ */
 class CouchbaseTest extends CommonAdapterTest
 {
     public function setUp()

@@ -260,7 +260,9 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
             }
         }
 
-        $this->removeNamespacePrefix(array_keys($result));
+        $result = array_keys($result);
+
+        $this->removeNamespacePrefix($result);
     }
 
     /**
@@ -510,7 +512,9 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
             return [];
         }
 
-        $this->removeNamespacePrefix(array_keys($result));
+        $result = array_keys($result);
+
+        $this->removeNamespacePrefix($result);
 
         return $result;
     }

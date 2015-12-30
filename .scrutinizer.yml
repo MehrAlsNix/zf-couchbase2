@@ -57,5 +57,5 @@ tools:
     php_analyzer:
         enabled: true
         filter:
-            paths: ["src/*", "test/*"]
+            paths: ["src/*"]
     sensiolabs_security_checker: true

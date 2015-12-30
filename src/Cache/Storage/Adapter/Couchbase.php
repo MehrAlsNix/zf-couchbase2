@@ -640,6 +640,39 @@ class Couchbase extends AbstractAdapter implements FlushableInterface
     }
 
     /**
+     * Internal method to decrement an item.
+     *
+     * @param string $normalizedKey
+     * @param int    $value
+     *
+     * @return int|bool The new value on success, false on failure
+     *
+     * @throws Exception\ExceptionInterface
+     */
+    protected function internalDecrementItem(&$normalizedKey, &$value)
+    {
+        $couchbaseBucket = $this->getCouchbaseResource();
+        $internalKey = $this->namespacePrefix.$normalizedKey;
+        $value = - (int) $value;
+        $newValue = false;
+
+        try {
+            $newValue = $couchbaseBucket->counter($internalKey, $value, ['expiry' => $this->expirationTime()])->value;
+        } catch (\CouchbaseException $e) {
+            try {
+                if ($e->getCode() === \COUCHBASE_KEY_ENOENT) {
+                    $newValue = $value;
+                    $couchbaseBucket->insert($internalKey, $value, ['expiry' => $this->expirationTime()]);
+                }
+            } catch (\CouchbaseException $e) {
+                throw new Exception\RuntimeException($e);
+            }
+        }
+
+        return $newValue;
+    }
+
+    /**
      * Internal method to get capabilities of this adapter.
      *
      * @return Capabilities

@@ -67,22 +67,6 @@ class CouchbaseTest extends CommonAdapterTest
         parent::setUp();
     }
 
-    public function testLibOptionsSet()
-    {
-        $options = new CouchbaseOptions();
-        $options->setLibOptions([
-            'SERTYPE_IGBINARY' => false
-        ]);
-        $this->assertEquals($options->getResourceManager()->getLibOptions(
-            $options->getResourceId()
-        ), false);
-        $couchbase = new Couchbase($options);
-        $this->assertEquals($couchbase->getOptions()->getLibOptions(), [
-            \COUCHBASE_SERTYPE_IGBINARY => false
-        ]);
-    }
-
-
     public function tearDown()
     {
         if ($this->_storage) {

@@ -213,6 +213,54 @@ class CouchbaseOptions extends AdapterOptions
      *
      * @return string
      */
+    public function getEncoder()
+    {
+        return $this->getResourceManager()->getEncoder($this->getResourceId());
+    }
+
+    /**
+     * Set the persistent id.
+     *
+     * @param string $encoder
+     *
+     * @return CouchbaseOptions
+     */
+    public function setEncoder($encoder)
+    {
+        $this->getResourceManager()->setEncoder($this->getResourceId(), $encoder);
+
+        return $this;
+    }
+
+    /**
+     * Get the persistent id.
+     *
+     * @return string
+     */
+    public function getDecoder()
+    {
+        return $this->getResourceManager()->getDecoder($this->getResourceId());
+    }
+
+    /**
+     * Set the persistent id.
+     *
+     * @param string $decoder
+     *
+     * @return CouchbaseOptions
+     */
+    public function setDecoder($decoder)
+    {
+        $this->getResourceManager()->setUsername($this->getResourceId(), $decoder);
+
+        return $this;
+    }
+
+    /**
+     * Get the persistent id.
+     *
+     * @return string
+     */
     public function getBucket()
     {
         return $this->getResourceManager()->getBucket($this->getResourceId());
@@ -256,29 +304,5 @@ class CouchbaseOptions extends AdapterOptions
     public function getServer()
     {
         return $this->getResourceManager()->getServer($this->getResourceId());
-    }
-
-    /**
-     * Set libmemcached options.
-     *
-     * @param array $libOptions
-     *
-     * @return CouchbaseOptions
-     */
-    public function setLibOptions(array $libOptions)
-    {
-        $this->getResourceManager()->setLibOptions($this->getResourceId(), $libOptions);
-
-        return $this;
-    }
-
-    /**
-     * Get libmemcached options.
-     *
-     * @return array
-     */
-    public function getLibOptions()
-    {
-        return $this->getResourceManager()->getLibOptions($this->getResourceId());
     }
 }

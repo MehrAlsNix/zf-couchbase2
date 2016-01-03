@@ -1,5 +1,15 @@
 {
   "name": "mehr-als-nix/zf-couchbase2",
+  "description": "The MehrAlsNix\\ZF\\Cache\\Storage\\Adapter\\Couchbase adapter stores cache items over the couchbase protocol. It’s using the required PHP extension couchbase which is based on Libcouchbase.",
+  "type": "library",
+  "keywords": [
+    "cache",
+    "zendframework",
+    "adapter",
+    "storage",
+    "module",
+    "couchbase"
+  ],
   "license": "MIT",
   "authors": [
     {
